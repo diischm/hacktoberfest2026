@@ -10,8 +10,8 @@ export const API_MODE = {
   feedback: "mock", // M3
   segments: "live", // existing bike lanes from OpenStreetMap (E7)
   bikeParking: "live", // existing bicycle parking from OpenStreetMap (E10)
-  scenarios: "mock", // M4
-  compare: "mock", // M4
+  scenarios: "live", // M4: demo trips (E8)
+  compare: "live", // M4: scored routes (E9)
 };
 
 export const API_BASE = "/api";

@@ -96,3 +96,15 @@ def test_base_loads_api_modules(client):
 
     assert b'type="module" src="/static/web/js/config.js"' in content
     assert b'type="module" src="/static/web/js/api.js"' in content
+
+
+def test_route_mocks_match_contract_keys():
+    scenarios, compare = mock("scenarios.json"), mock("routes-compare.json")
+    scenarios_example = contract_example("### E8 Route scenarios")
+    compare_example = contract_example("### E9 Route comparison")
+
+    assert scenarios.keys() == scenarios_example.keys()
+    assert scenarios["scenarios"][0].keys() == scenarios_example["scenarios"][0].keys()
+    assert compare.keys() == compare_example.keys()
+    assert compare["routes"][0].keys() == compare_example["routes"][0].keys()
+    assert compare["scenario"]["id"] == scenarios["scenarios"][0]["id"]

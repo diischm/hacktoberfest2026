@@ -1204,6 +1204,132 @@ button {
 .result__review { font-size: var(--text-sm); font-weight: 600; }
 .result__actions { display: flex; flex-wrap: wrap; gap: var(--space-sm); margin-top: var(--space-xs); }
 
+/* ------------------------------------------------------------------ ROUTES page */
+/* Phones: header, map, tickets stacked. Wide screens: tickets left, sticky map right. */
+.routes {
+  display: grid;
+  gap: var(--space-xl);
+  max-width: 72rem;
+  margin: 0 auto;
+}
+.routes__head { display: grid; gap: var(--space-sm); padding: var(--space-xl) var(--space-lg); }
+.routes__head h1 { font-size: var(--text-2xl); line-height: 0.95; }
+.routes__demo { display: flex; align-items: center; gap: var(--space-xs); font-size: var(--text-sm); }
+.routes__map {
+  height: 52dvh;
+  min-height: 300px;
+  padding: 6px;
+  transform: rotate(0.6deg);
+  isolation: isolate; /* keep Leaflet's z-indexes inside */
+  scroll-margin-top: calc(var(--topbar-h) + var(--safe-top) + var(--space-md));
+}
+.routes__tickets { display: grid; gap: var(--space-lg); align-content: start; }
+.routes__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  justify-self: center;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--paper);
+  box-shadow: var(--shadow-paper);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
+.routes__error { justify-self: center; }
+.route-end {
+  font-family: var(--font-body);
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1.5px solid var(--ink);
+  border-radius: var(--radius-sm);
+}
+
+.scenario-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.scenario-tabs button {
+  border: 2px solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+  border-radius: var(--radius-pill);
+  padding: 6px 14px;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color var(--dur-short) var(--ease-out);
+}
+.scenario-tabs button[aria-selected="true"] { background: var(--ink); color: var(--sticky); }
+
+/* route ticket: paper stub with the score behind a dashed perforation */
+.route-ticket {
+  --c: var(--c-grey);
+  --r: 0deg;
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 70px;
+  gap: var(--space-xs) var(--space-lg);
+  padding: var(--space-lg) var(--space-md) var(--space-lg) calc(var(--space-md) + 10px);
+  border: 0;
+  border-left: 10px solid var(--c);
+  background: var(--paper);
+  box-shadow: var(--shadow-paper);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transform: rotate(var(--r));
+  animation: ticket-in var(--dur-long) var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 90ms);
+  transition: transform var(--dur-short) var(--ease-out), box-shadow var(--dur-short) var(--ease-out);
+}
+@keyframes ticket-in {
+  from { opacity: 0; transform: translateY(14px) rotate(var(--r)); }
+}
+.route-ticket::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 96px;
+  border-right: 2px dashed var(--rule);
+}
+.route-ticket:hover,
+.route-ticket.is-active { transform: rotate(0deg) translateX(6px); box-shadow: var(--shadow-lift); }
+.route-ticket.is-active { outline: 2px solid var(--ink); outline-offset: -2px; }
+.route-ticket__name { font-family: var(--font-hand); font-size: var(--text-xl); line-height: 1.1; }
+.route-ticket__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-soft);
+  letter-spacing: 0.06em;
+}
+.route-ticket__score {
+  grid-row: 1 / span 4;
+  grid-column: 2;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  font-family: var(--font-mono);
+}
+.route-ticket__score b { font-size: 2.6rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.route-ticket__score small { font-size: 10px; letter-spacing: 0.12em; }
+.route-ticket ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 2px; font-size: var(--text-sm); }
+.route-ticket li::before { content: "\2013\00a0"; color: var(--ink-soft); }
+.route-ticket .stamp {
+  position: absolute;
+  top: -12px;
+  right: 104px;
+  --r: -7deg;
+  padding: 4px 8px;
+  background: var(--paper);
+  font-size: 11px;
+  animation: stamp-in var(--dur-long) var(--ease-out) 500ms both;
+}
+
 /* ------------------------------------------------------------------ larger screens */
 @media (min-width: 561px) {
   .summary { width: 170px; padding: 8px 10px 10px; font-size: var(--text-xs); line-height: 1.5; }
@@ -1253,6 +1379,22 @@ button {
   .detail__grip { display: none; }
   .detail__close { top: 20px; right: 20px; }
   .detail__photo { aspect-ratio: 4 / 3; }
+
+  .routes {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    grid-template-areas: "head map" "tickets map";
+    align-items: start;
+  }
+  .routes__head { grid-area: head; }
+  .routes__head h1 { font-size: var(--text-display); }
+  .routes__map {
+    grid-area: map;
+    position: sticky;
+    top: calc(var(--topbar-h) + var(--safe-top) + var(--space-md));
+    height: min(72dvh, 640px);
+  }
+  .routes__tickets { grid-area: tickets; }
+  .routes__error { grid-area: tickets; }
 }
 
 @media (min-width: 981px) {

@@ -1,10 +1,40 @@
 {% extends "web/base.html" %}
+{% load static %}
 
 {% block title %}Routes · BikeAble{% endblock %}
 
+{% block head %}
+{% include "web/partials/leaflet_css.html" %}
+{% endblock %}
+
 {% block content %}
-<section class="card">
-  <h1 class="card__title">Compare routes</h1>
-  <p class="muted">Route comparison is coming soon.</p>
-</section>
+<div class="routes">
+  <header class="routes__head piece sticky" style="--r:-1.5deg">
+    <h1 class="hand" id="routes-title">Which way today?</h1>
+    <p>Each route is scored 0&ndash;100 from the hazards riders reported on it. Higher is calmer.</p>
+    <div class="scenario-tabs" id="scenario-tabs" role="tablist" aria-label="Trips"></div>
+    <p class="routes__demo" id="routes-demo" hidden><span class="chip chip--demo">Demo data</span> Sample trips with sample hazards.</p>
+  </header>
+
+  <div class="routes__map sheet">
+    <span class="tape tape--tl" aria-hidden="true"></span>
+    <span class="tape tape--tr" aria-hidden="true"></span>
+    <div id="routes-map" class="map" role="region" aria-label="Map of the route alternatives"></div>
+  </div>
+
+  <div class="routes__tickets" id="route-tickets" aria-live="polite">
+    <p class="routes__status" id="routes-loading"><span class="map-status__wheel" aria-hidden="true"></span>Loading routes…</p>
+  </div>
+
+  <div class="map-status__error routes__error" id="routes-error" role="alert" hidden>
+    <strong>Couldn't load the routes</strong>
+    <p id="routes-error-text"></p>
+    <button class="btn btn--ink" type="button" id="routes-retry">Try again</button>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% include "web/partials/leaflet_js.html" %}
+<script type="module" src="{% static 'web/js/routes.js' %}"></script>
 {% endblock %}
