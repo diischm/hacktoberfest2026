@@ -6,6 +6,7 @@ comfortable one. It's a hackathon prototype for "Fix My City"; demo reports are 
 synthetic.
 
 ## Screenshots from the app
+![Alternative description text](https://i.imgur.com/NeEHIs4.png)
 ![Alternative description text](https://i.imgur.com/sGziy1s.png)
 ![Alternative description text](https://i.imgur.com/bN3NRlp.png)
 ![Alternative description text](https://i.imgur.com/eg5krjt.png)
