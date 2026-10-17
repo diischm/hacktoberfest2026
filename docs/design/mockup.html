@@ -1,0 +1,2511 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>BikeAble Mockup</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,700;12..96,800&family=Gochi+Hand&family=Space+Mono:wght@400;700&display=swap">
+<style>
+/* required styles */
+
+.leaflet-pane,
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-tile-container,
+.leaflet-pane > svg,
+.leaflet-pane > canvas,
+.leaflet-zoom-box,
+.leaflet-image-layer,
+.leaflet-layer {
+	position: absolute;
+	left: 0;
+	top: 0;
+	}
+.leaflet-container {
+	overflow: hidden;
+	}
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow {
+	-webkit-user-select: none;
+	   -moz-user-select: none;
+	        user-select: none;
+	  -webkit-user-drag: none;
+	}
+/* Prevents IE11 from highlighting tiles in blue */
+.leaflet-tile::selection {
+	background: transparent;
+}
+/* Safari renders non-retina tile on retina better with this, but Chrome is worse */
+.leaflet-safari .leaflet-tile {
+	image-rendering: -webkit-optimize-contrast;
+	}
+/* hack that prevents hw layers "stretching" when loading new tiles */
+.leaflet-safari .leaflet-tile-container {
+	width: 1600px;
+	height: 1600px;
+	-webkit-transform-origin: 0 0;
+	}
+.leaflet-marker-icon,
+.leaflet-marker-shadow {
+	display: block;
+	}
+/* .leaflet-container svg: reset svg max-width decleration shipped in Joomla! (joomla.org) 3.x */
+/* .leaflet-container img: map is broken in FF if you have max-width: 100% on tiles */
+.leaflet-container .leaflet-overlay-pane svg {
+	max-width: none !important;
+	max-height: none !important;
+	}
+.leaflet-container .leaflet-marker-pane img,
+.leaflet-container .leaflet-shadow-pane img,
+.leaflet-container .leaflet-tile-pane img,
+.leaflet-container img.leaflet-image-layer,
+.leaflet-container .leaflet-tile {
+	max-width: none !important;
+	max-height: none !important;
+	width: auto;
+	padding: 0;
+	}
+
+.leaflet-container img.leaflet-tile {
+	/* See: https://bugs.chromium.org/p/chromium/issues/detail?id=600120 */
+	mix-blend-mode: plus-lighter;
+}
+
+.leaflet-container.leaflet-touch-zoom {
+	-ms-touch-action: pan-x pan-y;
+	touch-action: pan-x pan-y;
+	}
+.leaflet-container.leaflet-touch-drag {
+	-ms-touch-action: pinch-zoom;
+	/* Fallback for FF which doesn't support pinch-zoom */
+	touch-action: none;
+	touch-action: pinch-zoom;
+}
+.leaflet-container.leaflet-touch-drag.leaflet-touch-zoom {
+	-ms-touch-action: none;
+	touch-action: none;
+}
+.leaflet-container {
+	-webkit-tap-highlight-color: transparent;
+}
+.leaflet-container a {
+	-webkit-tap-highlight-color: rgba(51, 181, 229, 0.4);
+}
+.leaflet-tile {
+	filter: inherit;
+	visibility: hidden;
+	}
+.leaflet-tile-loaded {
+	visibility: inherit;
+	}
+.leaflet-zoom-box {
+	width: 0;
+	height: 0;
+	-moz-box-sizing: border-box;
+	     box-sizing: border-box;
+	z-index: 800;
+	}
+/* workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=888319 */
+.leaflet-overlay-pane svg {
+	-moz-user-select: none;
+	}
+
+.leaflet-pane         { z-index: 400; }
+
+.leaflet-tile-pane    { z-index: 200; }
+.leaflet-overlay-pane { z-index: 400; }
+.leaflet-shadow-pane  { z-index: 500; }
+.leaflet-marker-pane  { z-index: 600; }
+.leaflet-tooltip-pane   { z-index: 650; }
+.leaflet-popup-pane   { z-index: 700; }
+
+.leaflet-map-pane canvas { z-index: 100; }
+.leaflet-map-pane svg    { z-index: 200; }
+
+.leaflet-vml-shape {
+	width: 1px;
+	height: 1px;
+	}
+.lvml {
+	behavior: url(#default#VML);
+	display: inline-block;
+	position: absolute;
+	}
+
+
+/* control positioning */
+
+.leaflet-control {
+	position: relative;
+	z-index: 800;
+	pointer-events: visiblePainted; /* IE 9-10 doesn't have auto */
+	pointer-events: auto;
+	}
+.leaflet-top,
+.leaflet-bottom {
+	position: absolute;
+	z-index: 1000;
+	pointer-events: none;
+	}
+.leaflet-top {
+	top: 0;
+	}
+.leaflet-right {
+	right: 0;
+	}
+.leaflet-bottom {
+	bottom: 0;
+	}
+.leaflet-left {
+	left: 0;
+	}
+.leaflet-control {
+	float: left;
+	clear: both;
+	}
+.leaflet-right .leaflet-control {
+	float: right;
+	}
+.leaflet-top .leaflet-control {
+	margin-top: 10px;
+	}
+.leaflet-bottom .leaflet-control {
+	margin-bottom: 10px;
+	}
+.leaflet-left .leaflet-control {
+	margin-left: 10px;
+	}
+.leaflet-right .leaflet-control {
+	margin-right: 10px;
+	}
+
+
+/* zoom and fade animations */
+
+.leaflet-fade-anim .leaflet-popup {
+	opacity: 0;
+	-webkit-transition: opacity 0.2s linear;
+	   -moz-transition: opacity 0.2s linear;
+	        transition: opacity 0.2s linear;
+	}
+.leaflet-fade-anim .leaflet-map-pane .leaflet-popup {
+	opacity: 1;
+	}
+.leaflet-zoom-animated {
+	-webkit-transform-origin: 0 0;
+	    -ms-transform-origin: 0 0;
+	        transform-origin: 0 0;
+	}
+svg.leaflet-zoom-animated {
+	will-change: transform;
+}
+
+.leaflet-zoom-anim .leaflet-zoom-animated {
+	-webkit-transition: -webkit-transform 0.25s cubic-bezier(0,0,0.25,1);
+	   -moz-transition:    -moz-transform 0.25s cubic-bezier(0,0,0.25,1);
+	        transition:         transform 0.25s cubic-bezier(0,0,0.25,1);
+	}
+.leaflet-zoom-anim .leaflet-tile,
+.leaflet-pan-anim .leaflet-tile {
+	-webkit-transition: none;
+	   -moz-transition: none;
+	        transition: none;
+	}
+
+.leaflet-zoom-anim .leaflet-zoom-hide {
+	visibility: hidden;
+	}
+
+
+/* cursors */
+
+.leaflet-interactive {
+	cursor: pointer;
+	}
+.leaflet-grab {
+	cursor: -webkit-grab;
+	cursor:    -moz-grab;
+	cursor:         grab;
+	}
+.leaflet-crosshair,
+.leaflet-crosshair .leaflet-interactive {
+	cursor: crosshair;
+	}
+.leaflet-popup-pane,
+.leaflet-control {
+	cursor: auto;
+	}
+.leaflet-dragging .leaflet-grab,
+.leaflet-dragging .leaflet-grab .leaflet-interactive,
+.leaflet-dragging .leaflet-marker-draggable {
+	cursor: move;
+	cursor: -webkit-grabbing;
+	cursor:    -moz-grabbing;
+	cursor:         grabbing;
+	}
+
+/* marker & overlays interactivity */
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-image-layer,
+.leaflet-pane > svg path,
+.leaflet-tile-container {
+	pointer-events: none;
+	}
+
+.leaflet-marker-icon.leaflet-interactive,
+.leaflet-image-layer.leaflet-interactive,
+.leaflet-pane > svg path.leaflet-interactive,
+svg.leaflet-image-layer.leaflet-interactive path {
+	pointer-events: visiblePainted; /* IE 9-10 doesn't have auto */
+	pointer-events: auto;
+	}
+
+/* visual tweaks */
+
+.leaflet-container {
+	background: #ddd;
+	outline-offset: 1px;
+	}
+.leaflet-container a {
+	color: #0078A8;
+	}
+.leaflet-zoom-box {
+	border: 2px dotted #38f;
+	background: rgba(255,255,255,0.5);
+	}
+
+
+/* general typography */
+.leaflet-container {
+	font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	font-size: 0.75rem;
+	line-height: 1.5;
+	}
+
+
+/* general toolbar styles */
+
+.leaflet-bar {
+	box-shadow: 0 1px 5px rgba(0,0,0,0.65);
+	border-radius: 4px;
+	}
+.leaflet-bar a {
+	background-color: #fff;
+	border-bottom: 1px solid #ccc;
+	width: 26px;
+	height: 26px;
+	line-height: 26px;
+	display: block;
+	text-align: center;
+	text-decoration: none;
+	color: black;
+	}
+.leaflet-bar a,
+.leaflet-control-layers-toggle {
+	background-position: 50% 50%;
+	background-repeat: no-repeat;
+	display: block;
+	}
+.leaflet-bar a:hover,
+.leaflet-bar a:focus {
+	background-color: #f4f4f4;
+	}
+.leaflet-bar a:first-child {
+	border-top-left-radius: 4px;
+	border-top-right-radius: 4px;
+	}
+.leaflet-bar a:last-child {
+	border-bottom-left-radius: 4px;
+	border-bottom-right-radius: 4px;
+	border-bottom: none;
+	}
+.leaflet-bar a.leaflet-disabled {
+	cursor: default;
+	background-color: #f4f4f4;
+	color: #bbb;
+	}
+
+.leaflet-touch .leaflet-bar a {
+	width: 30px;
+	height: 30px;
+	line-height: 30px;
+	}
+.leaflet-touch .leaflet-bar a:first-child {
+	border-top-left-radius: 2px;
+	border-top-right-radius: 2px;
+	}
+.leaflet-touch .leaflet-bar a:last-child {
+	border-bottom-left-radius: 2px;
+	border-bottom-right-radius: 2px;
+	}
+
+/* zoom control */
+
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+	font: bold 18px 'Lucida Console', Monaco, monospace;
+	text-indent: 1px;
+	}
+
+.leaflet-touch .leaflet-control-zoom-in, .leaflet-touch .leaflet-control-zoom-out  {
+	font-size: 22px;
+	}
+
+
+/* layers control */
+
+.leaflet-control-layers {
+	box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+	background: #fff;
+	border-radius: 5px;
+	}
+.leaflet-control-layers-toggle {
+	background-image: url(images/layers.png);
+	width: 36px;
+	height: 36px;
+	}
+.leaflet-retina .leaflet-control-layers-toggle {
+	background-image: url(images/layers-2x.png);
+	background-size: 26px 26px;
+	}
+.leaflet-touch .leaflet-control-layers-toggle {
+	width: 44px;
+	height: 44px;
+	}
+.leaflet-control-layers .leaflet-control-layers-list,
+.leaflet-control-layers-expanded .leaflet-control-layers-toggle {
+	display: none;
+	}
+.leaflet-control-layers-expanded .leaflet-control-layers-list {
+	display: block;
+	position: relative;
+	}
+.leaflet-control-layers-expanded {
+	padding: 6px 10px 6px 6px;
+	color: #333;
+	background: #fff;
+	}
+.leaflet-control-layers-scrollbar {
+	overflow-y: scroll;
+	overflow-x: hidden;
+	padding-right: 5px;
+	}
+.leaflet-control-layers-selector {
+	margin-top: 2px;
+	position: relative;
+	top: 1px;
+	}
+.leaflet-control-layers label {
+	display: block;
+	font-size: 13px;
+	font-size: 1.08333em;
+	}
+.leaflet-control-layers-separator {
+	height: 0;
+	border-top: 1px solid #ddd;
+	margin: 5px -10px 5px -6px;
+	}
+
+/* Default icon URLs */
+.leaflet-default-icon-path { /* used only in path-guessing heuristic, see L.Icon.Default */
+	background-image: url(images/marker-icon.png);
+	}
+
+
+/* attribution and scale controls */
+
+.leaflet-container .leaflet-control-attribution {
+	background: #fff;
+	background: rgba(255, 255, 255, 0.8);
+	margin: 0;
+	}
+.leaflet-control-attribution,
+.leaflet-control-scale-line {
+	padding: 0 5px;
+	color: #333;
+	line-height: 1.4;
+	}
+.leaflet-control-attribution a {
+	text-decoration: none;
+	}
+.leaflet-control-attribution a:hover,
+.leaflet-control-attribution a:focus {
+	text-decoration: underline;
+	}
+.leaflet-attribution-flag {
+	display: inline !important;
+	vertical-align: baseline !important;
+	width: 1em;
+	height: 0.6669em;
+	}
+.leaflet-left .leaflet-control-scale {
+	margin-left: 5px;
+	}
+.leaflet-bottom .leaflet-control-scale {
+	margin-bottom: 5px;
+	}
+.leaflet-control-scale-line {
+	border: 2px solid #777;
+	border-top: none;
+	line-height: 1.1;
+	padding: 2px 5px 1px;
+	white-space: nowrap;
+	-moz-box-sizing: border-box;
+	     box-sizing: border-box;
+	background: rgba(255, 255, 255, 0.8);
+	text-shadow: 1px 1px #fff;
+	}
+.leaflet-control-scale-line:not(:first-child) {
+	border-top: 2px solid #777;
+	border-bottom: none;
+	margin-top: -2px;
+	}
+.leaflet-control-scale-line:not(:first-child):not(:last-child) {
+	border-bottom: 2px solid #777;
+	}
+
+.leaflet-touch .leaflet-control-attribution,
+.leaflet-touch .leaflet-control-layers,
+.leaflet-touch .leaflet-bar {
+	box-shadow: none;
+	}
+.leaflet-touch .leaflet-control-layers,
+.leaflet-touch .leaflet-bar {
+	border: 2px solid rgba(0,0,0,0.2);
+	background-clip: padding-box;
+	}
+
+
+/* popup */
+
+.leaflet-popup {
+	position: absolute;
+	text-align: center;
+	margin-bottom: 20px;
+	}
+.leaflet-popup-content-wrapper {
+	padding: 1px;
+	text-align: left;
+	border-radius: 12px;
+	}
+.leaflet-popup-content {
+	margin: 13px 24px 13px 20px;
+	line-height: 1.3;
+	font-size: 13px;
+	font-size: 1.08333em;
+	min-height: 1px;
+	}
+.leaflet-popup-content p {
+	margin: 17px 0;
+	margin: 1.3em 0;
+	}
+.leaflet-popup-tip-container {
+	width: 40px;
+	height: 20px;
+	position: absolute;
+	left: 50%;
+	margin-top: -1px;
+	margin-left: -20px;
+	overflow: hidden;
+	pointer-events: none;
+	}
+.leaflet-popup-tip {
+	width: 17px;
+	height: 17px;
+	padding: 1px;
+
+	margin: -10px auto 0;
+	pointer-events: auto;
+
+	-webkit-transform: rotate(45deg);
+	   -moz-transform: rotate(45deg);
+	    -ms-transform: rotate(45deg);
+	        transform: rotate(45deg);
+	}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+	background: white;
+	color: #333;
+	box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+	}
+.leaflet-container a.leaflet-popup-close-button {
+	position: absolute;
+	top: 0;
+	right: 0;
+	border: none;
+	text-align: center;
+	width: 24px;
+	height: 24px;
+	font: 16px/24px Tahoma, Verdana, sans-serif;
+	color: #757575;
+	text-decoration: none;
+	background: transparent;
+	}
+.leaflet-container a.leaflet-popup-close-button:hover,
+.leaflet-container a.leaflet-popup-close-button:focus {
+	color: #585858;
+	}
+.leaflet-popup-scrolled {
+	overflow: auto;
+	}
+
+.leaflet-oldie .leaflet-popup-content-wrapper {
+	-ms-zoom: 1;
+	}
+.leaflet-oldie .leaflet-popup-tip {
+	width: 24px;
+	margin: 0 auto;
+
+	-ms-filter: "progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678)";
+	filter: progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678);
+	}
+
+.leaflet-oldie .leaflet-control-zoom,
+.leaflet-oldie .leaflet-control-layers,
+.leaflet-oldie .leaflet-popup-content-wrapper,
+.leaflet-oldie .leaflet-popup-tip {
+	border: 1px solid #999;
+	}
+
+
+/* div icon */
+
+.leaflet-div-icon {
+	background: #fff;
+	border: 1px solid #666;
+	}
+
+
+/* Tooltip */
+/* Base styles for the element that has a tooltip */
+.leaflet-tooltip {
+	position: absolute;
+	padding: 6px;
+	background-color: #fff;
+	border: 1px solid #fff;
+	border-radius: 3px;
+	color: #222;
+	white-space: nowrap;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	pointer-events: none;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+	}
+.leaflet-tooltip.leaflet-interactive {
+	cursor: pointer;
+	pointer-events: auto;
+	}
+.leaflet-tooltip-top:before,
+.leaflet-tooltip-bottom:before,
+.leaflet-tooltip-left:before,
+.leaflet-tooltip-right:before {
+	position: absolute;
+	pointer-events: none;
+	border: 6px solid transparent;
+	background: transparent;
+	content: "";
+	}
+
+/* Directions */
+
+.leaflet-tooltip-bottom {
+	margin-top: 6px;
+}
+.leaflet-tooltip-top {
+	margin-top: -6px;
+}
+.leaflet-tooltip-bottom:before,
+.leaflet-tooltip-top:before {
+	left: 50%;
+	margin-left: -6px;
+	}
+.leaflet-tooltip-top:before {
+	bottom: 0;
+	margin-bottom: -12px;
+	border-top-color: #fff;
+	}
+.leaflet-tooltip-bottom:before {
+	top: 0;
+	margin-top: -12px;
+	margin-left: -6px;
+	border-bottom-color: #fff;
+	}
+.leaflet-tooltip-left {
+	margin-left: -6px;
+}
+.leaflet-tooltip-right {
+	margin-left: 6px;
+}
+.leaflet-tooltip-left:before,
+.leaflet-tooltip-right:before {
+	top: 50%;
+	margin-top: -6px;
+	}
+.leaflet-tooltip-left:before {
+	right: 0;
+	margin-right: -12px;
+	border-left-color: #fff;
+	}
+.leaflet-tooltip-right:before {
+	left: 0;
+	margin-left: -12px;
+	border-right-color: #fff;
+	}
+
+/* Printing */
+
+@media print {
+	/* Prevent printers from removing background-images of controls. */
+	.leaflet-control {
+		-webkit-print-color-adjust: exact;
+		print-color-adjust: exact;
+		}
+	}
+
+</style>
+<style>
+/* Hallmark · route: custom (bespoke) · structure: pinboard collage on a cutting mat · idea: "the city is a rider's scrapbook: every hazard is a paper piece taped to the map"
+ * paper: oklch(96% 0.018 88) · board: oklch(44% 0.055 158) · accent: oklch(64% 0.19 42) signal orange
+ * display: Gochi Hand · body: Bricolage Grotesque · outlier: Space Mono (receipts + tickets only)
+ * axes: mid / handwritten-display / warm · gates: all-pass · studied: no (moodboard: surrealism, scrapbook, pinboard portfolio, collage)
+ * Single deliberate look: the board and paper are physical materials, so there is no dark variant.
+ */
+
+/* ------------------------------------------------------------------ tokens */
+:root {
+  color-scheme: light;
+
+  /* the cutting mat */
+  --board: oklch(44% 0.055 158);
+  --board-deep: oklch(37% 0.05 158);
+  --board-line: oklch(49% 0.05 158);
+  --board-major: oklch(53% 0.05 158);
+
+  /* paper stock */
+  --paper: oklch(96% 0.018 88);
+  --paper-2: oklch(92% 0.024 86);
+  --kraft: oklch(77% 0.06 68);
+  --kraft-deep: oklch(70% 0.065 64);
+  --sticky: oklch(93% 0.1 100);
+  --lilac: oklch(87% 0.05 300);
+  --sky-top: oklch(78% 0.08 232);
+  --sky-low: oklch(90% 0.04 210);
+  --cloud: oklch(97% 0.01 230);
+  --mtn: oklch(56% 0.05 250);
+  --mtn-far: oklch(68% 0.04 245);
+  --grass: oklch(62% 0.12 140);
+  --tape: oklch(92% 0.03 92 / 0.72);
+
+  /* ink */
+  --ink: oklch(23% 0.02 60);
+  --ink-soft: oklch(42% 0.02 60);
+  --rule: oklch(80% 0.02 80);
+  --on-board: oklch(95% 0.02 150);
+
+  /* the one accent */
+  --accent: oklch(64% 0.19 42);
+  --accent-deep: oklch(55% 0.18 40);
+  --accent-ink: oklch(98% 0.01 80);
+  --focus: oklch(60% 0.2 42);
+
+  /* condition colours (overwritten from GET /api/meta/ at startup) */
+  --c-green: #2E7D32;
+  --c-amber: #F9A825;
+  --c-red: #C62828;
+  --c-grey: #757575;
+
+  --font-hand: "Gochi Hand", "Comic Neue", "Segoe Print", cursive;
+  --font-body: "Bricolage Grotesque", "Segoe UI", ui-sans-serif, sans-serif;
+  --font-mono: "Space Mono", ui-monospace, "SFMono-Regular", monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.75rem;
+  --text-2xl: 2.4rem;
+  --text-display: clamp(2.6rem, 6vw, 4.6rem);
+
+  --space-2xs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+
+  --radius-sm: 4px;
+  --radius-md: 10px;
+  --radius-pill: 999px;
+
+  --shadow-paper: 0 1px 0 oklch(30% 0.03 150 / 0.25), 0 10px 22px -10px oklch(20% 0.04 150 / 0.55);
+  --shadow-lift: 0 2px 0 oklch(30% 0.03 150 / 0.2), 0 22px 34px -14px oklch(18% 0.04 150 / 0.6);
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 120ms;
+  --dur-short: 220ms;
+  --dur-long: 420ms;
+  --dur-scene: 700ms;
+
+  --topbar-h: 64px;
+}
+
+/* ------------------------------------------------------------------ base */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { overflow-x: clip; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  min-height: 100dvh;
+  font-family: var(--font-body);
+  font-size: var(--text-md);
+  line-height: 1.5;
+  color: var(--ink);
+  background-color: var(--board);
+  background-image:
+    linear-gradient(var(--board-major) 1px, transparent 1px),
+    linear-gradient(90deg, var(--board-major) 1px, transparent 1px),
+    linear-gradient(var(--board-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--board-line) 1px, transparent 1px);
+  background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px;
+  background-position: -1px -1px;
+  background-attachment: fixed;
+}
+/* print grain over everything, like the risograph collage refs */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 90;
+  opacity: 0.11;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+img { max-width: 100%; display: block; }
+h1, h2, h3 { margin: 0; font-weight: 400; font-style: normal; text-wrap: balance; overflow-wrap: anywhere; min-width: 0; }
+p { margin: 0; }
+a { color: inherit; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+[hidden] { display: none !important; }
+.hand { font-family: var(--font-hand); letter-spacing: 0.01em; }
+.fill-accent { fill: var(--accent) !important; stroke: none !important; }
+
+/* ------------------------------------------------------------------ paper materials */
+.piece { position: relative; transform: rotate(var(--r, 0deg)); box-shadow: var(--shadow-paper); }
+.kraft { background: var(--kraft); }
+.kraft::before { /* fibres */
+  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.35; border-radius: inherit;
+  background-image: radial-gradient(var(--kraft-deep) 0.7px, transparent 0.8px), radial-gradient(var(--paper-2) 0.5px, transparent 0.6px);
+  background-size: 7px 9px, 11px 13px; background-position: 0 0, 3px 5px;
+}
+.torn { clip-path: polygon(0 1.5%, 6% 0, 14% 1.2%, 22% 0.2%, 31% 1.4%, 42% 0, 53% 1%, 64% 0.1%, 75% 1.3%, 86% 0.3%, 94% 1.2%, 100% 0, 99.2% 25%, 100% 52%, 99.4% 78%, 100% 100%, 92% 98.6%, 81% 100%, 70% 98.8%, 58% 99.8%, 46% 98.6%, 35% 100%, 24% 98.8%, 12% 99.8%, 0 98.6%, 0.8% 72%, 0 47%, 0.6% 20%); }
+.sticky { background: var(--sticky); }
+.sheet { background: var(--paper); padding: var(--space-xs); box-shadow: var(--shadow-paper); position: relative; transform: rotate(var(--r, 0deg)); }
+
+.tape {
+  position: absolute; width: 96px; height: 28px; background: var(--tape); z-index: 3;
+  clip-path: polygon(3% 0, 97% 4%, 100% 30%, 96% 55%, 100% 100%, 2% 96%, 0 66%, 4% 40%);
+  transform-origin: center;
+  animation: tape-on var(--dur-long) var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 80ms + 360ms);
+}
+.tape--tl { top: -12px; left: 18px; rotate: -8deg; }
+.tape--tr { top: -12px; right: 18px; rotate: 7deg; }
+.tape--br { bottom: -12px; right: 24px; rotate: -6deg; }
+@keyframes tape-on { from { opacity: 0; transform: scaleX(0.2); } to { opacity: 1; transform: none; } }
+
+.receipt {
+  background: var(--paper);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  padding: var(--space-lg) var(--space-lg) var(--space-xl);
+  position: relative;
+}
+.receipt::before, .receipt::after { /* zigzag top + bottom edges */
+  content: ""; position: absolute; left: 0; right: 0; height: 10px;
+  background:
+    linear-gradient(135deg, var(--paper) 50%, transparent 50%) 0 0 / 12px 10px repeat-x,
+    linear-gradient(-135deg, var(--paper) 50%, transparent 50%) 0 0 / 12px 10px repeat-x;
+}
+.receipt::before { top: -10px; transform: scaleY(-1); }
+.receipt::after { bottom: -10px; }
+
+.polaroid { background: var(--paper); padding: 12px 12px 18px; box-shadow: var(--shadow-paper); }
+.polaroid__photo { aspect-ratio: 4 / 3; max-width: 100%; background: var(--paper-2); overflow: hidden; position: relative; }
+.polaroid__photo img { width: 100%; height: 100%; object-fit: cover; filter: saturate(0.9) contrast(1.02); }
+.polaroid__caption { text-align: center; font-size: var(--text-xl); margin-top: var(--space-xs); }
+
+.lined {
+  background:
+    linear-gradient(90deg, transparent 38px, oklch(75% 0.12 25 / 0.55) 38px 40px, transparent 40px),
+    repeating-linear-gradient(var(--paper) 0 31px, oklch(82% 0.05 240) 31px 32px);
+  background-color: var(--paper);
+  box-shadow: var(--shadow-paper);
+  transform: rotate(var(--r, 0deg));
+  position: relative;
+}
+
+.sticker { filter: drop-shadow(0 6px 8px oklch(20% 0.04 150 / 0.45)); }
+.stamp {
+  display: inline-grid; place-items: center;
+  font-family: var(--font-mono); font-weight: 700; letter-spacing: 0.14em; font-size: var(--text-sm);
+  color: var(--accent-deep); border: 3px solid var(--accent-deep); border-radius: var(--radius-sm);
+  padding: 6px 12px; background: transparent; transform: rotate(var(--r, -8deg));
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cfilter id='r'%3E%3CfeTurbulence baseFrequency='.8' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 -2.2 1.7'/%3E%3C/filter%3E%3Crect width='60' height='60' filter='url(%23r)'/%3E%3C/svg%3E");
+}
+
+/* ------------------------------------------------------------------ buttons + pills */
+.btn {
+  display: inline-flex; align-items: center; gap: var(--space-xs);
+  padding: 12px 20px; border-radius: var(--radius-pill); border: 2px solid var(--ink);
+  font-weight: 700; font-size: var(--text-md); text-decoration: none; white-space: nowrap; cursor: pointer;
+  transition: transform var(--dur-micro) var(--ease-out), background-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out);
+}
+.btn:hover { transform: translateY(-2px); }
+.btn:active { transform: translateY(0); transition-duration: 60ms; }
+.btn:disabled, .btn[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn--ink { background: var(--ink); color: var(--paper); }
+.btn--ink:hover { background: var(--accent-deep); border-color: var(--accent-deep); }
+.btn--line { background: transparent; color: var(--ink); }
+.btn--line:hover { background: var(--ink); color: var(--paper); }
+.btn--ticket {
+  width: 100%; justify-content: space-between; border-radius: var(--radius-sm); border: 0;
+  background: var(--accent); color: var(--accent-ink); padding: 16px 22px; font-size: var(--text-lg);
+  -webkit-mask: radial-gradient(circle 9px at 0 50%, transparent 98%, #000) left / 51% 100% no-repeat, radial-gradient(circle 9px at 100% 50%, transparent 98%, #000) right / 51% 100% no-repeat;
+          mask: radial-gradient(circle 9px at 0 50%, transparent 98%, #000) left / 51% 100% no-repeat, radial-gradient(circle 9px at 100% 50%, transparent 98%, #000) right / 51% 100% no-repeat;
+}
+.btn--ticket svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; transition: transform var(--dur-short) var(--ease-out); }
+.btn--ticket:hover { background: var(--accent-deep); }
+.btn--ticket:hover svg { transform: translateX(4px); }
+.btn--ticket[data-state="loading"] { opacity: 0.75; cursor: progress; }
+
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 38px; padding: 0 16px; border-radius: var(--radius-pill);
+  border: 1.5px solid oklch(100% 0 0 / 0.0); background: oklch(97% 0.02 150 / 0.14); color: var(--on-board);
+  font-size: var(--text-sm); font-weight: 600; text-decoration: none; white-space: nowrap; cursor: pointer;
+  backdrop-filter: blur(6px);
+  transition: background-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out), transform var(--dur-micro) var(--ease-out);
+}
+.pill:hover { background: oklch(97% 0.02 150 / 0.26); }
+.pill:active { transform: translateY(1px); }
+.pill svg { width: 14px; height: 14px; fill: currentColor; stroke: currentColor; stroke-width: 1.2; }
+.pill[aria-current="page"] { background: var(--paper); color: var(--ink); }
+.pill--ink { background: var(--paper); color: var(--ink); }
+.pill--ink:hover { background: var(--sticky); }
+.pill--ink[aria-current="page"] { background: var(--accent); color: var(--accent-ink); }
+.pill--paper { background: var(--paper); color: var(--ink); box-shadow: var(--shadow-paper); backdrop-filter: none; }
+.pill--paper:hover, .pill--paper[aria-expanded="true"] { background: var(--sticky); }
+.pill--glass { border-color: oklch(97% 0.02 150 / 0.35); }
+
+/* ------------------------------------------------------------------ top bar */
+.topbar {
+  position: fixed; inset: 0 0 auto; z-index: 40; height: calc(var(--topbar-h) + env(safe-area-inset-top, 0px));
+  padding: env(safe-area-inset-top, 0px) max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px));
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-md);
+  background: linear-gradient(var(--board-deep), oklch(37% 0.05 158 / 0));
+}
+.wordmark { display: inline-flex; align-items: center; gap: var(--space-xs); text-decoration: none; color: var(--on-board); font-family: var(--font-hand); font-size: 1.85rem; line-height: 1; }
+.wordmark__bike { width: 44px; height: 28px; }
+.wordmark:hover .spin { animation-play-state: running; }
+.wordmark .spin { animation: spin 1.2s linear infinite paused; }
+.topbar__nav { display: flex; align-items: center; gap: var(--space-xs); }
+
+/* ------------------------------------------------------------------ bike drawing */
+.bike, .wordmark__bike, .card__doodle, .scene__bike { overflow: visible; }
+.b-tyre { fill: none; stroke: var(--ink); stroke-width: 3.2; }
+.b-rim { fill: none; stroke: var(--ink-soft); stroke-width: 1; }
+.b-spokes line { stroke: var(--ink-soft); stroke-width: 1; }
+.b-hub { fill: var(--ink); }
+.b-frame { fill: none; stroke: var(--accent); stroke-width: 3.4; stroke-linejoin: round; stroke-linecap: round; }
+.b-seat, .b-bar { fill: none; stroke: var(--ink); stroke-width: 3; stroke-linecap: round; }
+.b-crank line { stroke: var(--ink); stroke-width: 2.4; stroke-linecap: round; }
+.b-crank circle { fill: var(--ink); }
+.b-body, .b-arm, .b-leg { fill: none; stroke: var(--ink); stroke-width: 3.6; stroke-linecap: round; stroke-linejoin: round; }
+.b-leg--back { stroke: var(--ink-soft); }
+.b-head { fill: var(--paper); stroke: var(--ink); stroke-width: 2; }
+.b-helmet { fill: var(--accent); }
+.wordmark .b-tyre, .wordmark .b-seat, .wordmark .b-bar, .wordmark .b-body, .wordmark .b-arm, .wordmark .b-leg, .wordmark .b-crank line { stroke: var(--on-board); }
+.wordmark .b-hub, .wordmark .b-crank circle { fill: var(--on-board); }
+.wordmark .b-rim, .wordmark .b-spokes line, .wordmark .b-leg--back { stroke: oklch(80% 0.03 150); }
+.wordmark .b-head { fill: var(--board); stroke: var(--on-board); }
+
+.spin { transform-box: fill-box; transform-origin: center; }
+.is-riding .spin, .bike .spin { animation: spin 0.7s linear infinite; }
+.bike .b-crank .spin { animation-duration: 1.1s; }
+.bike .b-leg--front { transform-box: view-box; transform-origin: 54px 36px; animation: pedal-a 1.1s var(--ease-in-out) infinite alternate; }
+.bike .b-leg--back { transform-box: view-box; transform-origin: 54px 36px; animation: pedal-b 1.1s var(--ease-in-out) infinite alternate; }
+.bike .b-rider { animation: bob 0.55s var(--ease-in-out) infinite alternate; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pedal-a { from { transform: rotate(-12deg); } to { transform: rotate(10deg); } }
+@keyframes pedal-b { from { transform: rotate(10deg); } to { transform: rotate(-12deg); } }
+@keyframes bob { to { transform: translateY(1.2px); } }
+
+/* ------------------------------------------------------------------ loader */
+.loader {
+  position: fixed; inset: 0; z-index: 100; display: grid; place-content: center; gap: var(--space-lg);
+  background: var(--board-deep);
+  padding-inline: max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-right, 0px));
+  transition: opacity var(--dur-scene) var(--ease-in-out);
+}
+.loader__strip {
+  position: relative; width: min(640px, 88vw); height: 150px; background: var(--paper);
+  box-shadow: var(--shadow-lift); overflow: hidden;
+  clip-path: polygon(0 4%, 9% 0, 21% 3%, 33% 0.5%, 46% 3.5%, 58% 0, 70% 3%, 83% 0.5%, 100% 3%, 100% 97%, 88% 100%, 76% 96.5%, 63% 99.5%, 50% 96.5%, 37% 100%, 24% 97%, 11% 99.5%, 0 96%);
+  transform: rotate(-1.5deg);
+  transition: transform var(--dur-scene) var(--ease-in), opacity var(--dur-scene) var(--ease-in);
+}
+.loader__clouds { position: absolute; inset: 0 0 auto; width: 100%; height: 80px; }
+.loader__clouds .cloud { fill: var(--sky-low); }
+.cloud--a { animation: drift 9s linear infinite; }
+.cloud--b { animation: drift 13s linear infinite reverse; }
+@keyframes drift { from { transform: translateX(-40px); } to { transform: translateX(40px); } }
+.loader__road { position: absolute; left: 0; right: 0; bottom: 22px; width: 100%; height: 14px; }
+.loader__road path { fill: none; stroke: var(--ink); stroke-width: 2.4; stroke-dasharray: 14 10; animation: road 0.6s linear infinite; }
+@keyframes road { to { stroke-dashoffset: -24; } }
+.loader__rider { position: absolute; bottom: 30px; left: 0; width: 132px; height: 84px; animation: ride 2.4s var(--ease-in-out) infinite; }
+.loader__rider .bike { width: 100%; height: 100%; }
+@keyframes ride {
+  0% { transform: translateX(-150px); }
+  100% { transform: translateX(calc(min(640px, 88vw) + 20px)); }
+}
+.loader__dust { position: absolute; left: 6px; bottom: 6px; display: flex; gap: 4px; }
+.loader__dust i { width: 7px; height: 7px; border-radius: 50%; background: var(--rule); animation: puff 0.6s var(--ease-out) infinite; }
+.loader__dust i:nth-child(2) { animation-delay: 0.2s; }
+.loader__dust i:nth-child(3) { animation-delay: 0.4s; }
+@keyframes puff { from { opacity: 0.9; transform: translateX(0) scale(1); } to { opacity: 0; transform: translateX(-18px) scale(0.4); } }
+.loader__msg { text-align: center; color: var(--on-board); font-family: var(--font-mono); font-size: var(--text-sm); letter-spacing: 0.12em; text-transform: uppercase; transition: opacity var(--dur-short) var(--ease-out); }
+.loader__dots::after { content: "..."; display: inline-block; width: 3ch; text-align: left; clip-path: inset(0 3ch 0 0); animation: dots 1.2s steps(4) infinite; }
+@keyframes dots { to { clip-path: inset(0 -1ch 0 0); } }
+.loader.is-leaving .loader__strip { transform: rotate(-1.5deg) translateY(-24px) scale(0.96); opacity: 0; }
+.loader.is-leaving .loader__msg { opacity: 0; }
+.loader.is-leaving { opacity: 0; pointer-events: none; }
+.loader.is-quick .loader__strip, .loader.is-quick .loader__msg { display: none; }
+
+/* ------------------------------------------------------------------ views + page transitions */
+main { padding: calc(var(--topbar-h) + env(safe-area-inset-top, 0px) + var(--space-md)) max(16px, env(safe-area-inset-right, 0px)) var(--space-2xl) max(16px, env(safe-area-inset-left, 0px)); }
+.view { max-width: 1240px; margin-inline: auto; }
+.view.is-entering [data-piece], .view.is-entering .piece, .view.is-entering .sheet, .view.is-entering .polaroid, .view.is-entering .lined, .view.is-entering .legend, .view.is-entering .map-ui > .pill, .view.is-entering .fab {
+  animation: settle var(--dur-scene) var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 80ms);
+}
+@keyframes settle {
+  from { opacity: 0; transform: translateY(-18px) rotate(calc(var(--r, 0deg) + 5deg)) scale(1.03); }
+  to { opacity: 1; transform: rotate(var(--r, 0deg)); }
+}
+.view.is-leaving { animation: leave calc(var(--dur-long) * 0.75) var(--ease-in) both; }
+@keyframes leave { to { opacity: 0; transform: translateY(8px); } }
+
+/* ------------------------------------------------------------------ HOME collage */
+.view--home { position: relative; }
+.board-tools { display: flex; justify-content: flex-end; margin-bottom: var(--space-sm); }
+.collage {
+  display: grid; gap: var(--space-xl) var(--space-lg);
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-areas:
+    "note note note note note note scene scene scene scene scene scene"
+    "note note note note note note scene scene scene scene scene scene"
+    "sticky sticky sticky receipt receipt receipt receipt ticket ticket ticket ticket ticket";
+  align-items: start;
+  position: relative;
+}
+.piece--note { grid-area: note; padding: var(--space-2xl) var(--space-xl) var(--space-xl); display: grid; gap: var(--space-lg); align-self: stretch; align-content: center; }
+.hero-title { font-size: var(--text-display); line-height: 0.95; }
+.lede { font-size: var(--text-lg); line-height: 1.45; max-width: 34ch; }
+.actions { display: flex; flex-wrap: wrap; gap: var(--space-sm); }
+
+.piece--scene { grid-area: scene; margin: 0; background: var(--paper); padding: 12px 12px 14px; }
+.scene { width: 100%; height: auto; display: block; }
+.scene .sky-top { stop-color: var(--sky-top); }
+.scene .sky-low { stop-color: var(--sky-low); }
+.scene .moon { fill: var(--cloud); opacity: 0.85; }
+.scene .mtn { fill: var(--mtn); }
+.scene .mtn--far { fill: var(--mtn-far); }
+.scene .grass { fill: var(--grass); }
+.scene__cloud { fill: var(--cloud); filter: drop-shadow(0 6px 6px oklch(40% 0.05 240 / 0.35)); }
+.scene__ladder path { fill: none; stroke: var(--kraft-deep); stroke-width: 4; stroke-linecap: round; }
+.scene__float { animation: float 5s var(--ease-in-out) infinite alternate; }
+@keyframes float { from { transform: translateY(-4px); } to { transform: translateY(6px); } }
+.scene__label { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; fill: var(--cloud); }
+.scene__bike .spin { animation: spin 4s linear infinite; }
+.piece--scene figcaption { font-size: var(--text-xl); text-align: center; margin-top: var(--space-2xs); }
+
+.piece--receipt { grid-area: receipt; }
+.receipt__head { display: flex; justify-content: space-between; gap: var(--space-sm); font-weight: 700; border-bottom: 1.5px dashed var(--ink-soft); padding-bottom: var(--space-xs); margin-bottom: var(--space-xs); }
+.receipt__rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.receipt__rows li { display: flex; align-items: baseline; gap: var(--space-xs); }
+.receipt__rows li::after { content: ""; order: 1; flex: 1; border-bottom: 1.5px dotted var(--rule); transform: translateY(-4px); }
+.receipt__rows b { order: 2; font-variant-numeric: tabular-nums; }
+.receipt__rows .sw { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: none; }
+.receipt__foot { margin-top: var(--space-sm); color: var(--ink-soft); font-size: var(--text-xs); }
+.receipt__link { display: inline-block; margin-top: var(--space-sm); font-weight: 700; text-decoration: none; border-bottom: 2px solid var(--accent); }
+.receipt__link:hover { color: var(--accent-deep); }
+
+.piece--sticky { grid-area: sticky; padding: var(--space-lg) var(--space-lg) var(--space-xl); }
+.piece--sticky h2 { font-size: var(--text-2xl); margin-bottom: var(--space-xs); }
+.checklist { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-xs); font-family: var(--font-hand); font-size: var(--text-lg); }
+.checklist li { display: flex; align-items: center; gap: var(--space-xs); }
+.box { width: 22px; height: 22px; border: 2px solid var(--ink); border-radius: 3px; flex: none; display: grid; place-items: center; background: transparent; }
+.box svg { width: 18px; height: 18px; fill: none; stroke: var(--accent-deep); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 24; stroke-dashoffset: 24; transition: stroke-dashoffset var(--dur-long) var(--ease-out); }
+.checklist li.is-done .box svg { stroke-dashoffset: 0; }
+.checklist li.is-done { text-decoration: line-through; text-decoration-color: oklch(45% 0.02 60 / 0.6); }
+
+.piece--ticket { grid-area: ticket; display: flex; text-decoration: none; background: var(--lilac); min-height: 140px; transition: transform var(--dur-short) var(--ease-out), box-shadow var(--dur-short) var(--ease-out); }
+.piece--ticket:hover { transform: rotate(calc(var(--r) + 1deg)) translateY(-4px); box-shadow: var(--shadow-lift); }
+.ticket__stub { writing-mode: vertical-rl; transform: rotate(180deg); font-family: var(--font-mono); font-weight: 700; letter-spacing: 0.3em; padding: var(--space-md) var(--space-xs); border-left: 2px dashed oklch(55% 0.06 300); display: grid; place-items: center; }
+.ticket__body { display: grid; gap: 6px; padding: var(--space-lg); align-content: center; min-width: 0; }
+.ticket__label { font-family: var(--font-mono); font-size: var(--text-xs); letter-spacing: 0.12em; text-transform: uppercase; }
+.ticket__route { font-family: var(--font-hand); font-size: var(--text-xl); font-weight: 400; line-height: 1.15; }
+.ticket__meta { font-size: var(--text-sm); color: var(--ink-soft); }
+
+.piece--sticker, .piece--stamp, .piece--cone { position: absolute; box-shadow: none; z-index: 4; }
+.sticker--round { width: 118px; height: 118px; border-radius: 50%; background: var(--paper); top: calc(50% - 90px); left: calc(50% - 70px); transition: transform var(--dur-long) var(--ease-out); }
+.sticker--round:hover { transform: rotate(calc(var(--r) + 40deg)); }
+.sticker--round text { font-family: var(--font-mono); font-size: 10.6px; font-weight: 700; letter-spacing: 0.08em; fill: var(--ink); }
+.piece--stamp { top: 46%; right: 4%; background: oklch(96% 0.018 88 / 0.0); font-size: var(--text-md); }
+.piece--cone { width: 64px; height: 64px; bottom: -18px; left: 23%; }
+.cone { fill: var(--accent); }
+.cone-band { fill: var(--paper); }
+.cone-base { fill: var(--ink); }
+
+/* organize = tidy the board (FLIP in JS); drag = free pieces */
+.collage.is-tidy .piece { --r: 0deg !important; }
+.collage.is-tidy .piece--sticker, .collage.is-tidy .piece--stamp, .collage.is-tidy .piece--cone { opacity: 0; transform: scale(0.6); pointer-events: none; }
+[data-piece].is-draggable { cursor: grab; touch-action: none; }
+[data-piece].is-dragging { cursor: grabbing; z-index: 30; box-shadow: var(--shadow-lift); transition: none !important; }
+
+/* ------------------------------------------------------------------ MENU (index cards) */
+.menu { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 88px max(16px, env(safe-area-inset-right, 0px)) 24px max(16px, env(safe-area-inset-left, 0px)); overflow-y: auto; }
+.menu__scrim { position: fixed; inset: 0; background: oklch(25% 0.04 158 / 0.62); backdrop-filter: blur(3px); animation: fade var(--dur-long) var(--ease-out) both; }
+.menu__deck { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 220px)); gap: var(--space-lg); }
+.card {
+  position: relative; display: grid; gap: var(--space-xs); align-content: start; text-align: left;
+  min-height: 250px; padding: var(--space-xl) var(--space-lg) var(--space-lg); border: 0; border-radius: var(--radius-sm);
+  text-decoration: none; color: var(--ink); cursor: pointer; box-shadow: var(--shadow-paper);
+  transform: rotate(var(--r));
+  animation: deal var(--dur-scene) var(--ease-out) both; animation-delay: calc(var(--i) * 70ms);
+  transition: transform var(--dur-short) var(--ease-out), box-shadow var(--dur-short) var(--ease-out);
+}
+.card:hover, .card:focus-visible { transform: rotate(0deg) translateY(-10px); box-shadow: var(--shadow-lift); }
+.card strong { font-family: var(--font-hand); font-size: var(--text-xl); font-weight: 400; line-height: 1.1; }
+.card > span:not(.card__tab):not(.card__sub) { font-size: var(--text-sm); color: var(--ink-soft); }
+.card__tab { position: absolute; top: -14px; left: 16px; padding: 3px 10px; font-family: var(--font-mono); font-size: var(--text-xs); letter-spacing: 0.12em; text-transform: uppercase; background: inherit; border-radius: 4px 4px 0 0; }
+.card__doodle { width: 64px; height: 52px; fill: none; stroke: var(--ink); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; margin-bottom: var(--space-xs); }
+.card--paper { background: var(--paper); }
+.card--kraft { background: var(--kraft); }
+.card--sticky { background: var(--sticky); }
+.card--lilac { background: var(--lilac); font: inherit; }
+/* sub-menu: chips slide out of the map card */
+.card__sub { display: flex; flex-wrap: wrap; gap: 6px; margin-top: var(--space-xs); }
+.card__sub span { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; padding: 4px 8px; border: 1.5px solid var(--ink); border-radius: var(--radius-pill); opacity: 0; transform: translateY(6px); transition: opacity var(--dur-short) var(--ease-out), transform var(--dur-short) var(--ease-out), background-color var(--dur-micro) var(--ease-out); }
+.card:hover .card__sub span, .card:focus-visible .card__sub span, .card:focus-within .card__sub span { opacity: 1; transform: none; }
+.card__sub span:nth-child(2) { transition-delay: 40ms; }
+.card__sub span:nth-child(3) { transition-delay: 80ms; }
+.card__sub span:hover { background: var(--ink); color: var(--paper); }
+@media (hover: none) { .card__sub span { opacity: 1; transform: none; } }
+@keyframes deal { from { opacity: 0; transform: translateY(60px) rotate(calc(var(--r) * -3)) scale(0.92); } to { opacity: 1; transform: rotate(var(--r)); } }
+@keyframes fade { from { opacity: 0; } }
+.menu.is-closing .menu__scrim { animation: fade calc(var(--dur-long) * 0.75) var(--ease-in) reverse both; }
+.menu.is-closing .card { animation: undeal calc(var(--dur-long) * 0.75) var(--ease-in) both; animation-delay: calc((3 - var(--i)) * 40ms); }
+@keyframes undeal { to { opacity: 0; transform: translateY(40px) rotate(var(--r)) scale(0.95); } }
+
+/* ------------------------------------------------------------------ MAP */
+.view--map { position: relative; max-width: none; }
+.sheet--map { height: calc(100dvh - var(--topbar-h) - env(safe-area-inset-top, 0px) - var(--space-md) - var(--space-lg)); min-height: 420px; padding: 10px; }
+.leaf { width: 100%; height: 100%; background: var(--paper-2); }
+.leaflet-container { font-family: var(--font-body); }
+.leaflet-tile-pane { filter: sepia(0.28) saturate(0.78) contrast(0.96) brightness(1.02); }
+.leaflet-control-attribution { font-size: 10px; background: oklch(96% 0.018 88 / 0.85) !important; }
+.leaflet-top.leaflet-right { margin-top: 2px; }
+.leaflet-control-zoom a { color: var(--ink) !important; background: var(--paper) !important; font-family: var(--font-mono); }
+.leaflet-bar { border: 0 !important; box-shadow: var(--shadow-paper) !important; }
+.map-ui { position: absolute; inset: 22px 22px 22px 22px; pointer-events: none; z-index: 500; }
+.map-ui > * { pointer-events: auto; }
+.map-ui > .pill { position: absolute; top: 0; left: 48px; }
+.layers { position: absolute; top: 50px; left: 48px; width: 260px; padding: var(--space-lg); box-shadow: var(--shadow-lift); transform-origin: top left; animation: unfold var(--dur-long) var(--ease-out) both; max-height: calc(100% - 60px); overflow-y: auto; }
+.layers.is-closing { animation: fold calc(var(--dur-long) * 0.75) var(--ease-in) both; }
+@keyframes unfold { from { opacity: 0; transform: rotate(-6deg) scale(0.85) translateY(-8px); } to { opacity: 1; transform: rotate(-1deg); } }
+@keyframes fold { from { opacity: 1; transform: rotate(-1deg); } to { opacity: 0; transform: rotate(-6deg) scale(0.88); } }
+.layers h2 { font-size: var(--text-xl); margin-bottom: var(--space-xs); }
+.layers__group { border: 0; padding: 0; margin: 0 0 var(--space-md); display: grid; gap: 6px; }
+.layers__group legend { font-family: var(--font-mono); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+.check { display: flex; align-items: center; gap: var(--space-xs); cursor: pointer; font-size: var(--text-sm); }
+.check input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.check input:checked + .box svg { stroke-dashoffset: 0; }
+.check input:focus-visible + .box { outline: 3px solid var(--focus); outline-offset: 2px; }
+.check .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ink-soft); margin-left: auto; }
+
+.legend { position: absolute; left: 0; bottom: 18px; width: 176px; transition: opacity var(--dur-short) var(--ease-out), translate var(--dur-short) var(--ease-out); padding: var(--space-md) var(--space-md) var(--space-lg); font-size: var(--text-xs); --r: -1.5deg; transform: rotate(var(--r)); box-shadow: var(--shadow-paper); }
+.legend.is-tucked { opacity: 0; translate: 0 16px; pointer-events: none; }
+.legend b { display: block; margin-bottom: 6px; letter-spacing: 0.1em; }
+.legend ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.legend li { display: flex; align-items: center; gap: 8px; }
+.legend .sw { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid var(--ink); }
+.legend .demo { margin-top: 8px; color: var(--ink-soft); }
+
+.fab { position: absolute; right: 0; bottom: 18px; }
+.stamp-btn {
+  display: inline-flex; align-items: center; gap: 10px; padding: 14px 20px 14px 16px; text-decoration: none;
+  background: var(--accent); color: var(--accent-ink); font-weight: 800; border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-lift); --r: -2deg; transform: rotate(var(--r));
+  transition: transform var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out);
+}
+.stamp-btn svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; }
+.stamp-btn:hover { transform: rotate(0deg) translateY(-3px); background: var(--accent-deep); }
+
+/* markers = map pins */
+.pin { --c: var(--c-grey); position: relative; width: 36px; height: 44px; }
+.pin__head { position: absolute; top: 0; left: 2px; width: 32px; height: 32px; border-radius: 50% 50% 50% 4px; transform: rotate(-45deg); background: var(--c); border: 2.5px solid var(--paper); box-shadow: 0 4px 8px oklch(20% 0.04 150 / 0.45); display: grid; place-items: center; transition: transform var(--dur-short) var(--ease-out); }
+.pin__head svg { width: 17px; height: 17px; transform: rotate(45deg); fill: none; stroke: var(--paper); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.pin.is-synthetic .pin__head { outline: 2px dashed var(--ink); outline-offset: 2px; }
+.pin.is-info .pin__head { border-radius: 50%; transform: none; }
+.pin.is-info .pin__head svg { transform: none; }
+.pin.is-active .pin__head { transform: rotate(-45deg) scale(1.2); }
+.pin.is-info.is-active .pin__head { transform: scale(1.2); }
+.pin-drop { animation: pin-drop var(--dur-scene) var(--ease-out) both; animation-delay: calc(var(--i, 0) * 60ms + 200ms); }
+@keyframes pin-drop { from { opacity: 0; transform: translateY(-26px); } to { opacity: 1; transform: none; } }
+.pick-pin { width: 30px; height: 40px; }
+.pick-pin svg { width: 30px; height: 40px; filter: drop-shadow(0 4px 4px oklch(20% 0.04 150 / 0.5)); }
+
+/* detail polaroid */
+.detail { position: absolute; z-index: 600; top: 22px; right: 22px; width: min(360px, calc(100% - 44px)); max-height: calc(100% - 44px); overflow-y: auto; --r: 1.5deg; transform: rotate(var(--r)); animation: slide-in var(--dur-long) var(--ease-out) both; }
+.detail.is-closing { animation: slide-out calc(var(--dur-long) * 0.75) var(--ease-in) both; }
+@keyframes slide-in { from { opacity: 0; transform: translateX(40px) rotate(6deg); } to { opacity: 1; transform: rotate(var(--r)); } }
+@keyframes slide-out { to { opacity: 0; transform: translateX(40px) rotate(6deg); } }
+.detail__close { position: absolute; top: 18px; right: 18px; z-index: 2; width: 34px; height: 34px; border-radius: 50%; border: 0; background: var(--paper); font-size: 22px; line-height: 1; cursor: pointer; box-shadow: var(--shadow-paper); }
+.detail__close:hover { background: var(--sticky); }
+.detail__body { display: grid; gap: var(--space-sm); padding: var(--space-md) 4px 0; }
+.detail__title { font-size: var(--text-2xl); line-height: 1; }
+.detail__desc { font-size: var(--text-md); }
+.detail__note { font-size: var(--text-lg); color: var(--ink-soft); }
+.detail__note:empty, .detail__desc:empty { display: none; }
+.detail__chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.05em; border-radius: var(--radius-pill); border: 1.5px solid var(--ink); background: var(--paper); white-space: nowrap; }
+.chip--cond { background: var(--c); color: var(--paper); border-color: var(--c); }
+.chip--demo { background: var(--sticky); }
+.chip--warn { border-style: dashed; }
+.detail__facts { display: grid; grid-template-columns: auto 1fr; gap: 4px var(--space-sm); margin: 0; font-size: var(--text-sm); }
+.detail__facts dt { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--ink-soft); padding-top: 2px; }
+.detail__facts dd { margin: 0; font-variant-numeric: tabular-nums; }
+.feedback { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.fb-btn { display: grid; justify-items: center; gap: 2px; padding: 10px 4px; border: 2px solid var(--ink); border-radius: var(--radius-sm); background: var(--paper); cursor: pointer; font-size: var(--text-sm); font-weight: 700; transition: transform var(--dur-micro) var(--ease-out), background-color var(--dur-short) var(--ease-out); }
+.fb-btn b { font-family: var(--font-mono); font-size: var(--text-lg); font-variant-numeric: tabular-nums; }
+.fb-btn:hover { background: var(--sticky); transform: translateY(-2px); }
+.fb-btn:active { transform: none; transition-duration: 60ms; }
+.fb-btn[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.fb-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.fb-btn.bump b { animation: bump var(--dur-long) var(--ease-out); }
+@keyframes bump { 30% { transform: translateY(-5px); } }
+.form-msg { font-size: var(--text-sm); color: var(--accent-deep); font-weight: 600; min-height: 1.2em; }
+.form-msg:empty { min-height: 0; }
+
+/* photo placeholder (no photo / failed load) */
+.no-photo { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 6px; background: repeating-linear-gradient(45deg, var(--paper-2) 0 12px, var(--paper) 12px 24px); color: var(--ink-soft); font-family: var(--font-mono); font-size: var(--text-xs); letter-spacing: 0.08em; text-transform: uppercase; }
+.no-photo svg { width: 54px; height: 54px; fill: none; stroke: var(--ink-soft); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ------------------------------------------------------------------ REPORT */
+.fieldnote {
+  display: grid; gap: var(--space-xl) var(--space-lg);
+  grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+  grid-template-areas: "head head" "photo where" "note note";
+  align-items: start;
+}
+.fieldnote__head { grid-area: head; padding: var(--space-xl); display: grid; gap: var(--space-xs); max-width: 640px; --i: 0; }
+.fieldnote__head h1 { font-size: var(--text-display); line-height: 0.95; }
+.fieldnote__head p { font-size: var(--text-lg); max-width: 46ch; }
+.fieldnote__photo { grid-area: photo; --i: 1; transform: rotate(var(--r)); position: relative; }
+.fieldnote__where { grid-area: where; --i: 2; padding: var(--space-md); }
+.fieldnote__note { grid-area: note; --i: 3; padding: var(--space-lg) var(--space-lg) var(--space-lg) 56px; display: grid; gap: var(--space-xs); }
+.step { position: absolute; top: -14px; left: -14px; z-index: 4; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: var(--ink); color: var(--paper); font-family: var(--font-mono); font-weight: 700; box-shadow: var(--shadow-paper); }
+.drop { position: relative; display: grid; place-items: center; aspect-ratio: 1 / 1; max-width: 100%; background: var(--paper-2); cursor: pointer; overflow: hidden; border: 2px dashed oklch(70% 0.03 80); transition: border-color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out); }
+.drop:hover, .drop.is-over { border-color: var(--accent); background: oklch(94% 0.03 70); }
+.drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.drop input:focus-visible ~ .drop__empty { outline: 3px solid var(--focus); outline-offset: 6px; }
+.drop__empty { display: grid; justify-items: center; gap: 6px; text-align: center; padding: var(--space-md); pointer-events: none; }
+.drop__empty svg { width: 64px; height: 64px; fill: none; stroke: var(--ink); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; transition: transform var(--dur-short) var(--ease-out); }
+.drop:hover .drop__empty svg { transform: rotate(-6deg) scale(1.06); }
+.drop__empty small { color: var(--ink-soft); }
+.drop__preview { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; animation: develop 1.2s var(--ease-out) both; pointer-events: none; }
+@keyframes develop { from { opacity: 0; filter: brightness(1.8) saturate(0); } to { opacity: 1; filter: none; } }
+.where__label { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-xs); margin-bottom: var(--space-xs); font-size: var(--text-sm); }
+.where__label span { font-family: var(--font-mono); color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.leaf--pick { height: 300px; cursor: crosshair; }
+.fieldnote__note label { font-size: var(--text-xl); line-height: 32px; }
+.fieldnote__note label small { font-size: var(--text-md); color: var(--ink-soft); }
+.fieldnote__note textarea { width: 100%; resize: vertical; border: 0; background: transparent; font-family: var(--font-hand); font-size: 1.3rem; line-height: 32px; color: var(--ink); padding: 0; min-height: 128px; }
+.fieldnote__note textarea:focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; }
+.counter { justify-self: end; font-family: var(--font-mono); font-size: var(--text-xs); color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.counter.is-near { color: var(--accent-deep); }
+.field-error { color: var(--c-red); font-size: var(--text-sm); font-weight: 600; }
+.field-error:empty { display: none; }
+
+.analyzing { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; background: oklch(25% 0.04 158 / 0.62); backdrop-filter: blur(3px); animation: fade var(--dur-long) var(--ease-out) both; padding-inline: max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-right, 0px)); }
+.analyzing__card { width: min(420px, 100%); text-align: center; display: grid; gap: var(--space-xs); padding: var(--space-lg); --r: -1deg; transform: rotate(var(--r)); animation: settle var(--dur-scene) var(--ease-out) both; }
+.analyzing__card p { font-size: var(--text-xl); transition: opacity var(--dur-short) var(--ease-out); }
+.analyzing__card small { color: var(--ink-soft); }
+.analyzing__track { position: relative; height: 90px; overflow: hidden; }
+.analyzing__track .bike { position: absolute; bottom: 14px; left: 0; width: 100px; height: 64px; animation: ride-small 2.2s var(--ease-in-out) infinite; }
+.analyzing__track .loader__road { bottom: 6px; }
+@keyframes ride-small { from { transform: translateX(-110px); } to { transform: translateX(420px); } }
+
+.result { max-width: 460px; margin: var(--space-xl) auto 0; position: relative; --r: -1deg; transform: rotate(var(--r)); }
+.result__stamp { position: absolute; top: 34px; right: 26px; z-index: 3; --r: 10deg; font-size: var(--text-md); color: var(--accent-deep); background: oklch(96% 0.018 88 / 0.75); animation: stamp-in var(--dur-long) var(--ease-out) 300ms both; }
+@keyframes stamp-in { from { opacity: 0; transform: rotate(var(--r)) scale(1.6); } to { opacity: 1; transform: rotate(var(--r)); } }
+
+/* ------------------------------------------------------------------ ROUTES */
+.routes { display: grid; gap: var(--space-xl) var(--space-lg); grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); grid-template-areas: "head map" "tickets map"; align-items: start; }
+.routes__head { grid-area: head; padding: var(--space-xl) var(--space-lg); display: grid; gap: var(--space-sm); --i: 0; }
+.routes__head h1 { font-size: var(--text-display); line-height: 0.95; }
+.routes__map { grid-area: map; height: min(72dvh, 640px); --i: 1; --r: 0.8deg; position: sticky; top: calc(var(--topbar-h) + 16px); }
+.routes__tickets { grid-area: tickets; display: grid; gap: var(--space-lg); }
+.scenario-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.scenario-tabs button { border: 2px solid var(--ink); background: transparent; border-radius: var(--radius-pill); padding: 6px 14px; cursor: pointer; font-size: var(--text-sm); font-weight: 600; white-space: nowrap; transition: background-color var(--dur-short) var(--ease-out); }
+.scenario-tabs button[aria-selected="true"] { background: var(--ink); color: var(--sticky); }
+.route-ticket {
+  --c: var(--c-grey); --r: 0deg; position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-sm) var(--space-lg);
+  padding: var(--space-lg) var(--space-lg) var(--space-lg) calc(var(--space-lg) + 10px); background: var(--paper); box-shadow: var(--shadow-paper);
+  border-left: 10px solid var(--c); cursor: pointer; text-align: left; font: inherit; color: inherit; border-top: 0; border-right: 0; border-bottom: 0;
+  transform: rotate(var(--r)); animation: settle var(--dur-scene) var(--ease-out) both; animation-delay: calc(var(--i, 0) * 90ms + 120ms);
+  transition: transform var(--dur-short) var(--ease-out), box-shadow var(--dur-short) var(--ease-out);
+}
+.route-ticket::after { content: ""; position: absolute; top: 0; bottom: 0; right: 108px; border-right: 2px dashed var(--rule); }
+.route-ticket:hover, .route-ticket.is-active { transform: rotate(0deg) translateX(6px); box-shadow: var(--shadow-lift); }
+.route-ticket__name { font-family: var(--font-hand); font-size: var(--text-xl); line-height: 1.1; }
+.route-ticket__meta { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--ink-soft); letter-spacing: 0.06em; }
+.route-ticket__score { grid-row: 1 / span 3; grid-column: 2; width: 84px; display: grid; place-content: center; justify-items: center; text-align: center; font-family: var(--font-mono); }
+.route-ticket__score b { font-size: 2.6rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.route-ticket__score small { font-size: 10px; letter-spacing: 0.12em; }
+.route-ticket ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 2px; font-size: var(--text-sm); }
+.route-ticket li::before { content: "\2013\00a0"; color: var(--ink-soft); }
+.route-ticket .stamp { position: absolute; top: -12px; right: 120px; --r: -7deg; background: var(--paper); font-size: 11px; padding: 4px 8px; animation: stamp-in var(--dur-long) var(--ease-out) 700ms both; }
+
+/* ------------------------------------------------------------------ toast */
+.toast { position: fixed; z-index: 95; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); translate: -50% 0; max-width: min(440px, calc(100% - 32px)); padding: 12px 18px; background: var(--ink); color: var(--paper); border-radius: var(--radius-sm); font-size: var(--text-sm); box-shadow: var(--shadow-lift); animation: toast-in var(--dur-short) var(--ease-out) both; }
+@keyframes toast-in { from { opacity: 0; transform: translateY(12px); } }
+
+/* ------------------------------------------------------------------ responsive */
+@media (max-width: 980px) {
+  .collage { grid-template-columns: repeat(6, minmax(0, 1fr)); grid-template-areas: "note note note note note note" "scene scene scene scene scene scene" "sticky sticky sticky receipt receipt receipt" "ticket ticket ticket ticket ticket ticket"; }
+  .sticker--round { top: auto; bottom: 40%; left: auto; right: 2%; }
+  .piece--stamp { top: 30%; right: 6%; }
+  .menu__deck { grid-template-columns: repeat(2, minmax(0, 240px)); }
+  .routes { grid-template-columns: minmax(0, 1fr); grid-template-areas: "head" "map" "tickets"; }
+  .routes__map { position: relative; top: 0; height: 52dvh; }
+}
+@media (max-width: 760px) {
+  :root { --topbar-h: 58px; }
+  .topbar__nav .pill:not(.pill--ink):not(.pill--icon) { display: none; }
+  .pill--icon span { display: none; }
+  .pill--icon { padding: 0 12px; }
+  .wordmark { font-size: 1.6rem; }
+  .fieldnote { grid-template-columns: minmax(0, 1fr); grid-template-areas: "head" "photo" "where" "note"; }
+  .drop { aspect-ratio: 4 / 3; }
+  .layers { left: 0; width: min(280px, 100%); }
+  .map-ui > .pill { left: 48px; }
+  .legend { display: none; }
+  .detail { inset: auto 0 0 0; width: auto; max-height: 72%; top: auto; right: auto; --r: 0deg; border-radius: var(--radius-md) var(--radius-md) 0 0; padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px)); animation-name: sheet-up; }
+  .detail.is-closing { animation-name: sheet-down; }
+  .detail .polaroid__photo { aspect-ratio: 16 / 9; }
+  @keyframes sheet-up { from { transform: translateY(100%); } to { transform: none; } }
+  @keyframes sheet-down { to { transform: translateY(100%); } }
+  .sheet--map { padding: 6px; }
+  .map-ui { inset: 14px; }
+}
+@media (max-width: 560px) {
+  .collage { grid-template-columns: minmax(0, 1fr); grid-template-areas: "note" "scene" "receipt" "sticky" "ticket"; gap: var(--space-xl); }
+  .piece--note { padding: var(--space-xl) var(--space-lg) var(--space-lg); }
+  .sticker--round { width: 92px; height: 92px; bottom: auto; top: 33%; right: -4px; }
+  .piece--stamp { display: none; }
+  .piece--cone { left: auto; right: 10px; bottom: 120px; }
+  .menu__deck { grid-template-columns: minmax(0, 1fr); width: 100%; max-width: 360px; gap: var(--space-md); }
+  .card { min-height: 0; grid-template-columns: auto 1fr; column-gap: var(--space-md); padding: var(--space-lg); }
+  .card__doodle { grid-row: span 3; width: 48px; height: 40px; }
+  .board-tools { display: none; }
+  .route-ticket::after { right: 96px; }
+  .route-ticket__score { width: 70px; }
+  .route-ticket .stamp { right: 104px; }
+}
+
+/* ------------------------------------------------------------------ reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 150ms !important; animation-iteration-count: 1 !important; animation-delay: 0ms !important; transition-duration: 150ms !important; }
+  .loader__rider { left: calc(50% - 66px); animation: none; }
+  .scene__float, .cloud--a, .cloud--b, .loader__road path { animation: none !important; }
+  .bike .spin, .bike .b-leg, .bike .b-rider, .scene__bike .spin { animation: none !important; }
+}
+
+
+/* mockup only: map tiles can't load inside the preview frame, so sketch a street grid instead */
+.leaf { background-color: var(--paper-2); background-image:
+  linear-gradient(28deg, transparent 47%, oklch(88% 0.03 230) 47% 53%, transparent 53%),
+  linear-gradient(-62deg, transparent 49%, oklch(99% 0.01 90) 49% 51.5%, transparent 51.5%),
+  linear-gradient(8deg, transparent 49%, oklch(99% 0.01 90) 49% 51%, transparent 51%),
+  repeating-linear-gradient(90deg, transparent 0 86px, oklch(99% 0.01 90 / .8) 86px 90px),
+  repeating-linear-gradient(0deg, transparent 0 70px, oklch(99% 0.01 90 / .8) 70px 74px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, auto, auto; }
+.mock-note { position: fixed; z-index: 91; left: 50%; translate: -50% 0; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; color: var(--on-board); background: oklch(25% 0.04 158 / .8); padding: 5px 10px; border-radius: 999px; white-space: nowrap; pointer-events: none; }
+@media (max-width: 560px) { .mock-note { display: none; } }
+
+</style>
+
+<input type="hidden" name="csrfmiddlewaretoken" value="mockup">
+
+<!-- ============ Loader: a bike rides across a paper strip ============ -->
+<div class="loader" id="loader" role="status" aria-live="polite">
+  <div class="loader__strip">
+    <svg class="loader__clouds" viewBox="0 0 600 120" aria-hidden="true">
+      <g class="cloud cloud--a"><circle cx="80" cy="40" r="16"/><circle cx="100" cy="32" r="20"/><circle cx="124" cy="40" r="15"/><rect x="72" y="40" width="64" height="14" rx="7"/></g>
+      <g class="cloud cloud--b"><circle cx="420" cy="30" r="12"/><circle cx="436" cy="24" r="16"/><circle cx="455" cy="31" r="11"/><rect x="412" y="30" width="52" height="11" rx="5.5"/></g>
+    </svg>
+    <div class="loader__rider">
+      <svg class="bike" viewBox="0 0 132 84" aria-hidden="true">
+        <use href="#bike-shape"/>
+      </svg>
+      <span class="loader__dust" aria-hidden="true"><i></i><i></i><i></i></span>
+    </div>
+    <svg class="loader__road" viewBox="0 0 600 14" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 7 Q 40 3 80 7 T 160 7 T 240 7 T 320 7 T 400 7 T 480 7 T 560 7 T 640 7"/>
+    </svg>
+  </div>
+  <p class="loader__msg"><span id="loader-msg">Pumping the tyres</span><span class="loader__dots" aria-hidden="true"></span></p>
+</div>
+
+<!-- Reusable bicycle drawing (frame orange, rider in an orange helmet) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="wheel">
+      <circle r="18" class="b-tyre"/>
+      <circle r="14.5" class="b-rim"/>
+      <g class="b-spokes"><line x1="-14" y1="0" x2="14" y2="0"/><line x1="0" y1="-14" x2="0" y2="14"/><line x1="-10" y1="-10" x2="10" y2="10"/><line x1="-10" y1="10" x2="10" y2="-10"/></g>
+      <circle r="2.4" class="b-hub"/>
+    </g>
+    <g id="bike-shape">
+      <g class="b-rider">
+        <path class="b-leg b-leg--back" d="M54 36 L62 52 L60 64"/>
+        <path class="b-body" d="M54 36 L74 20"/>
+        <path class="b-arm" d="M73 21 L86 28"/>
+        <circle class="b-head" cx="78" cy="13" r="6"/>
+        <path class="b-helmet" d="M71.5 12 a6.6 6.6 0 0 1 13 -1 l1.5 1.5 z"/>
+        <path class="b-leg b-leg--front" d="M54 36 L66 48 L62 62"/>
+      </g>
+      <g class="b-wheel b-wheel--rear" transform="translate(28 62)"><g class="spin"><use href="#wheel"/></g></g>
+      <g class="b-wheel b-wheel--front" transform="translate(102 62)"><g class="spin"><use href="#wheel"/></g></g>
+      <path class="b-frame" d="M28 62 L60 62 L52 38 Z M52 38 L86 38 L60 62 M86 38 L102 62 M84 32 L88 30 M86 32 L86 38"/>
+      <path class="b-seat" d="M46 36 L58 36"/>
+      <path class="b-bar" d="M84 30 Q 90 28 92 32"/>
+      <g class="b-crank" transform="translate(60 62)"><g class="spin"><line x1="-8" y1="0" x2="8" y2="0"/><circle r="3"/></g></g>
+    </g>
+  </defs>
+</svg>
+
+<!-- ============ Header ============ -->
+<header class="topbar">
+  <a class="wordmark" href="#home" data-link aria-label="BikeAble home">
+    <svg viewBox="0 0 132 84" class="wordmark__bike" aria-hidden="true"><use href="#bike-shape"/></svg>
+    <span>BikeAble</span>
+  </a>
+  <nav class="topbar__nav" aria-label="Main">
+    <a class="pill" href="#map" data-link data-nav="map">Map</a>
+    <a class="pill" href="#routes" data-link data-nav="routes">Routes</a>
+    <a class="pill pill--ink" href="#report" data-link data-nav="report">Report a hazard</a>
+    <button class="pill pill--icon" id="menu-btn" aria-expanded="false" aria-controls="menu" type="button">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+      <span>Menu</span>
+    </button>
+  </nav>
+</header>
+
+<!-- ============ Menu: index cards fan onto the board ============ -->
+<div class="menu" id="menu" hidden>
+  <div class="menu__scrim" data-close-menu></div>
+  <div class="menu__deck" role="dialog" aria-modal="true" aria-label="Menu">
+    <a class="card card--paper" href="#map" data-link style="--i:0;--r:-4deg">
+      <span class="card__tab">Map</span>
+      <svg class="card__doodle" viewBox="0 0 64 64" aria-hidden="true"><path d="M8 14 L24 8 L40 14 L56 8 L56 50 L40 56 L24 50 L8 56 Z M24 8 L24 50 M40 14 L40 56"/><circle cx="46" cy="28" r="5" class="fill-accent"/></svg>
+      <strong>Hazard map</strong>
+      <span>See what riders reported around the centre.</span>
+      <span class="card__sub">
+        <span data-sub="hazards">Hazards</span><span data-sub="shortcuts">Shortcuts</span><span data-sub="segments">Lanes</span>
+      </span>
+    </a>
+    <a class="card card--kraft" href="#report" data-link style="--i:1;--r:3deg">
+      <span class="card__tab">Report</span>
+      <svg class="card__doodle" viewBox="0 0 64 64" aria-hidden="true"><rect x="8" y="18" width="48" height="34" rx="4"/><circle cx="32" cy="35" r="10"/><path d="M22 18 L26 11 L38 11 L42 18"/><circle cx="32" cy="35" r="4" class="fill-accent"/></svg>
+      <strong>Report a hazard</strong>
+      <span>Photo, a tap on the map, done. The AI fills in the rest.</span>
+    </a>
+    <a class="card card--sticky" href="#routes" data-link style="--i:2;--r:-2deg">
+      <span class="card__tab">Routes</span>
+      <svg class="card__doodle" viewBox="0 0 64 64" aria-hidden="true"><circle cx="12" cy="50" r="5"/><circle cx="52" cy="14" r="5" class="fill-accent"/><path d="M15 46 C 30 44 20 26 34 24 S 44 18 48 16" stroke-dasharray="4 4"/><path d="M16 50 C 40 52 50 34 52 19"/></svg>
+      <strong>Compare routes</strong>
+      <span>Two ways across town, scored on today&rsquo;s reports.</span>
+    </a>
+    <button class="card card--lilac" type="button" id="replay-intro" style="--i:3;--r:5deg">
+      <span class="card__tab">Intro</span>
+      <svg class="card__doodle" viewBox="0 0 132 84" aria-hidden="true"><use href="#bike-shape"/></svg>
+      <strong>Replay the intro</strong>
+      <span>Watch the bike ride across again.</span>
+    </button>
+  </div>
+</div>
+
+<main id="main">
+
+  <!-- ============ HOME ============ -->
+  <section class="view view--home" data-view="home" aria-labelledby="home-title">
+    <div class="board-tools">
+      <button class="pill pill--glass" id="organize-btn" type="button" aria-pressed="false">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+        <span>Organize</span>
+      </button>
+    </div>
+
+    <div class="collage" id="collage">
+
+      <article class="piece piece--note kraft torn" data-piece style="--i:0;--r:-2.5deg">
+        <span class="tape tape--tl" aria-hidden="true"></span>
+        <h1 id="home-title" class="hand hero-title">Ride around the mess.</h1>
+        <p class="lede">BikeAble maps blocked lanes, parked cars and potholes in Skopje from photos riders send in. Snap a hazard, the AI reads it, the next rider sees it coming.</p>
+        <div class="actions">
+          <a class="btn btn--ink" href="#map" data-link>Open the map <span aria-hidden="true">&rarr;</span></a>
+          <a class="btn btn--line" href="#report" data-link>Report a hazard</a>
+        </div>
+      </article>
+
+      <figure class="piece piece--scene" data-piece style="--i:1;--r:2deg">
+        <span class="tape tape--tr" aria-hidden="true"></span>
+        <svg class="scene" viewBox="0 0 400 300" role="img" aria-label="A bicycle parked on a cloud above Vodno, with a ladder down to the grass">
+          <defs>
+            <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="sky-top"/><stop offset="1" class="sky-low"/></linearGradient>
+          </defs>
+          <rect width="400" height="300" fill="url(#sky)"/>
+          <circle cx="62" cy="48" r="16" class="moon"/>
+          <path class="mtn mtn--far" d="M0 230 L48 186 L82 206 L130 160 L176 204 L214 182 L262 214 L300 170 L346 206 L400 188 L400 300 L0 300 Z"/>
+          <path class="mtn" d="M0 250 L70 214 L110 232 L168 196 L240 240 L300 216 L360 240 L400 226 L400 300 L0 300 Z"/>
+          <path class="grass" d="M0 262 Q 100 248 200 258 T 400 254 L400 300 L0 300 Z"/>
+          <g class="scene__float">
+            <g class="scene__ladder">
+              <path d="M226 160 L234 270 M250 160 L258 270"/>
+              <path d="M228 178 L250 178 M229 196 L251 196 M230 214 L252 214 M232 232 L254 232 M233 250 L255 250"/>
+            </g>
+            <g class="scene__cloud">
+              <circle cx="150" cy="150" r="30"/><circle cx="190" cy="128" r="38"/><circle cx="238" cy="132" r="34"/><circle cx="276" cy="152" r="26"/>
+              <rect x="130" y="146" width="168" height="30" rx="15"/>
+            </g>
+            <svg x="160" y="62" width="110" height="70" viewBox="0 0 132 84" class="scene__bike"><use href="#bike-shape"/></svg>
+          </g>
+          <text x="20" y="286" class="scene__label">VODNO, 41.97&deg;N</text>
+        </svg>
+        <figcaption class="hand">Skopje, from above the traffic</figcaption>
+      </figure>
+
+      <aside class="piece piece--receipt receipt" data-piece style="--i:2;--r:-1deg" aria-labelledby="receipt-title">
+        <header class="receipt__head">
+          <span id="receipt-title">TODAY ON THE MAP</span>
+          <span id="receipt-date">--.--.----</span>
+        </header>
+        <ul class="receipt__rows" id="receipt-rows">
+          <li><span>Active reports</span><b>&mdash;</b></li>
+        </ul>
+        <p class="receipt__foot" id="receipt-demo"></p>
+        <a class="receipt__link" href="#map" data-link>&rarr; Open the live map</a>
+      </aside>
+
+      <aside class="piece piece--sticky sticky" data-piece style="--i:3;--r:3deg" aria-label="How it works">
+        <h2 class="hand">Today:</h2>
+        <ul class="checklist">
+          <li class="is-done"><span class="box" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M4 11 L8 15 L16 4"/></svg></span>Snap the hazard</li>
+          <li class="is-done"><span class="box" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M4 11 L8 15 L16 4"/></svg></span>Tap where it is</li>
+          <li><span class="box" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M4 11 L8 15 L16 4"/></svg></span>Let the AI read it</li>
+          <li><span class="box" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M4 11 L8 15 L16 4"/></svg></span>Warn the next rider</li>
+        </ul>
+      </aside>
+
+      <a class="piece piece--ticket ticket" href="#routes" data-link data-piece style="--i:4;--r:-3deg">
+        <span class="ticket__stub" aria-hidden="true">ROUTE</span>
+        <span class="ticket__body">
+          <span class="ticket__label">Best way today</span>
+          <strong class="ticket__route" id="ticket-route">City Park &rarr; Macedonia Square</strong>
+          <span class="ticket__meta" id="ticket-meta">Loading routes</span>
+        </span>
+      </a>
+
+      <span class="piece piece--sticker sticker sticker--round" data-piece style="--i:5;--r:-12deg" aria-hidden="true">
+        <svg viewBox="0 0 120 120"><defs><path id="ring" d="M60 60 m-44 0 a44 44 0 1 1 88 0 a44 44 0 1 1 -88 0"/></defs>
+          <text><textPath href="#ring">FIX MY CITY &middot; FIX MY CITY &middot; FIX MY CITY &middot;</textPath></text>
+          <use href="#bike-shape" transform="translate(28 40) scale(.48)"/>
+        </svg>
+      </span>
+
+      <span class="piece piece--stamp stamp" data-piece style="--i:6;--r:9deg" aria-hidden="true">AI&nbsp;READ</span>
+
+      <span class="piece piece--cone sticker" data-piece style="--i:7;--r:6deg" aria-hidden="true">
+        <svg viewBox="0 0 64 64"><path class="cone" d="M26 10 L38 10 L50 50 L14 50 Z"/><path class="cone-band" d="M22 24 L42 24 L45 34 L19 34 Z"/><rect x="8" y="50" width="48" height="6" rx="2" class="cone-base"/></svg>
+      </span>
+    </div>
+  </section>
+
+  <!-- ============ MAP ============ -->
+  <section class="view view--map" data-view="map" hidden aria-label="Hazard map">
+    <div class="sheet sheet--map">
+      <span class="tape tape--tl" aria-hidden="true"></span>
+      <span class="tape tape--br" aria-hidden="true"></span>
+      <div id="map" class="leaf"></div>
+    </div>
+
+    <div class="map-ui">
+      <button class="pill pill--paper" id="layers-btn" type="button" aria-expanded="false" aria-controls="layers">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1 L15 5 L8 9 L1 5 Z"/><path d="M1 8 L8 12 L15 8" fill="none"/><path d="M1 11 L8 15 L15 11" fill="none"/></svg>
+        <span>Layers</span>
+      </button>
+      <div class="layers sticky" id="layers" hidden>
+        <h2 class="hand">Show on map</h2>
+        <fieldset class="layers__group" id="layer-types"><legend>What riders reported</legend></fieldset>
+        <fieldset class="layers__group">
+          <legend>Extras</legend>
+          <label class="check"><input type="checkbox" id="show-segments" checked><span class="box" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M4 11 L8 15 L16 4"/></svg></span>Lane condition</label>
+          <label class="check"><input type="checkbox" id="show-resolved"><span class="box" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M4 11 L8 15 L16 4"/></svg></span>Resolved reports</label>
+        </fieldset>
+      </div>
+
+      <aside class="legend receipt receipt--mini" aria-label="Legend" id="legend"></aside>
+
+      <a class="fab stamp-btn" href="#report" data-link>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><circle cx="12" cy="13.5" r="3.6"/><path d="M8 7 L9.5 4 L14.5 4 L16 7"/></svg>
+        <span>Report here</span>
+      </a>
+    </div>
+
+    <article class="detail polaroid" id="detail" hidden aria-live="polite" aria-labelledby="detail-title">
+      <button class="detail__close" type="button" data-close-detail aria-label="Close report">&times;</button>
+      <div class="polaroid__photo" id="detail-photo"></div>
+      <div class="detail__body">
+        <div class="detail__chips" id="detail-chips"></div>
+        <h2 class="hand detail__title" id="detail-title">Report</h2>
+        <p class="detail__desc" id="detail-desc"></p>
+        <p class="detail__note hand" id="detail-note"></p>
+        <dl class="detail__facts" id="detail-facts"></dl>
+        <div class="feedback" id="detail-feedback" role="group" aria-label="Is it still there?"></div>
+        <p class="form-msg" id="detail-msg" role="status"></p>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============ REPORT ============ -->
+  <section class="view view--report" data-view="report" hidden aria-labelledby="report-title">
+    <form class="fieldnote" id="report-form" novalidate>
+      <header class="fieldnote__head piece kraft torn" style="--r:-1.5deg">
+        <span class="tape tape--tl" aria-hidden="true"></span>
+        <h1 class="hand" id="report-title">Spotted something?</h1>
+        <p>Three steps. The photo does most of the work: the AI names the hazard, you just say where.</p>
+      </header>
+
+      <div class="fieldnote__photo polaroid" style="--r:2deg">
+        <span class="step">1</span>
+        <label class="drop" for="photo" id="drop">
+          <input type="file" id="photo" name="photo" accept="image/jpeg,image/png,image/webp" capture="environment">
+          <span class="drop__empty">
+            <svg viewBox="0 0 64 64" aria-hidden="true"><rect x="8" y="18" width="48" height="34" rx="4"/><circle cx="32" cy="35" r="10"/><path d="M22 18 L26 11 L38 11 L42 18"/></svg>
+            <strong>Take or choose a photo</strong>
+            <small id="photo-hint">JPEG, PNG or WebP, up to 10 MB</small>
+          </span>
+          <img class="drop__preview" id="photo-preview" alt="Your hazard photo" hidden>
+        </label>
+        <p class="polaroid__caption hand" id="photo-caption">the hazard</p>
+        <p class="field-error" id="err-photo"></p>
+      </div>
+
+      <div class="fieldnote__where sheet" style="--r:-1deg">
+        <span class="step">2</span>
+        <span class="tape tape--tr" aria-hidden="true"></span>
+        <p class="where__label"><strong>Tap where it is</strong> <span id="where-coords">No spot yet</span></p>
+        <div id="pick-map" class="leaf leaf--pick"></div>
+        <p class="field-error" id="err-location"></p>
+      </div>
+
+      <div class="fieldnote__note lined" style="--r:1deg">
+        <span class="step">3</span>
+        <label for="note" class="hand">Anything to add? <small>(optional)</small></label>
+        <textarea id="note" name="note" rows="4" maxlength="500" placeholder="Every morning around 8&hellip;"></textarea>
+        <span class="counter" id="note-count">0 / 500</span>
+        <p class="field-error" id="err-note"></p>
+        <button class="btn btn--ticket" id="submit-btn" type="submit">
+          <span>Send to the map</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12 L20 12 M14 6 L20 12 L14 18"/></svg>
+        </button>
+        <p class="form-msg" id="report-msg" role="status"></p>
+      </div>
+    </form>
+
+    <div class="analyzing" id="analyzing" hidden role="status" aria-live="polite">
+      <div class="analyzing__card polaroid">
+        <div class="analyzing__track">
+          <svg class="bike" viewBox="0 0 132 84" aria-hidden="true"><use href="#bike-shape"/></svg>
+          <svg class="loader__road" viewBox="0 0 600 14" preserveAspectRatio="none" aria-hidden="true"><path d="M0 7 Q 40 3 80 7 T 160 7 T 240 7 T 320 7 T 400 7 T 480 7 T 560 7 T 640 7"/></svg>
+        </div>
+        <p class="hand" id="analyzing-msg">Reading your photo&hellip;</p>
+        <small>This can take up to 15 seconds.</small>
+      </div>
+    </div>
+
+    <article class="result polaroid" id="result" hidden aria-labelledby="result-title">
+      <span class="stamp result__stamp" aria-hidden="true">ON THE MAP</span>
+      <div class="polaroid__photo" id="result-photo"></div>
+      <div class="detail__body">
+        <div class="detail__chips" id="result-chips"></div>
+        <h2 class="hand detail__title" id="result-title">Report sent</h2>
+        <p class="detail__desc" id="result-desc"></p>
+        <div class="actions">
+          <a class="btn btn--ink" id="result-view" href="#map" data-link>See it on the map</a>
+          <button class="btn btn--line" type="button" id="result-again">Report another</button>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============ ROUTES ============ -->
+  <section class="view view--routes" data-view="routes" hidden aria-labelledby="routes-title">
+    <div class="routes">
+      <header class="routes__head piece sticky" style="--r:-2deg">
+        <h1 class="hand" id="routes-title">Which way today?</h1>
+        <p>Each route is scored 0&ndash;100 from the hazards riders reported on it. Higher is calmer.</p>
+        <div class="scenario-tabs" id="scenario-tabs" role="tablist" aria-label="Trips"></div>
+      </header>
+      <div class="routes__map sheet">
+        <span class="tape tape--tl" aria-hidden="true"></span>
+        <div id="routes-map" class="leaf"></div>
+      </div>
+      <div class="routes__tickets" id="route-tickets" aria-live="polite"></div>
+    </div>
+  </section>
+
+</main>
+
+<div class="toast" id="toast" role="alert" hidden></div>
+
+
+
+
+<p class="mock-note">MOCKUP · demo data · street tiles load in the real app</p>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>window.BIKEABLE_MOCKS = {"error-ai-rate-limited.json": {"error": {"code": "ai_rate_limited", "message": "The photo analyzer is busy. Please try again in a minute.", "fields": {}, "retry_after_seconds": 60}}, "report-101.json": {"id": 101, "lat": 41.9962, "lng": 21.4316, "hazard_type": "car_in_bike_lane", "description": "A silver car is parked across the painted bike lane.", "note": "Every morning around 8", "ai_confidence": 0.91, "needs_review": false, "verification_status": "community_confirmed", "condition": "red", "freshness_weight": 0.86, "created_at": "2026-10-17T08:05:00+02:00", "last_confirmed_at": "2026-10-17T09:40:00+02:00", "photo_url": "/media/reports/2026/10/101.jpg", "is_synthetic": false, "feedback_counts": {"still_there": 2, "resolved": 0, "dispute": 0}}, "scenarios.json": {"scenarios": [{"id": "city-park-to-square", "name": "City Park \u2192 Macedonia Square", "from": {"name": "City Park", "lat": 41.9993, "lng": 21.418}, "to": {"name": "Macedonia Square", "lat": 41.9962, "lng": 21.4316}}]}, "report-create.json": {"id": 103, "lat": 41.9951, "lng": 21.4302, "hazard_type": "car_on_crosswalk", "description": "A black SUV is stopped on the zebra crossing.", "note": "", "ai_confidence": 0.87, "needs_review": false, "verification_status": "unverified", "condition": "red", "freshness_weight": 1.0, "created_at": "2026-10-17T11:02:13+02:00", "last_confirmed_at": "2026-10-17T11:02:13+02:00", "photo_url": "/media/reports/2026/10/103.jpg", "is_synthetic": false, "feedback_counts": {"still_there": 0, "resolved": 0, "dispute": 0}}, "meta.json": {"contract_version": 1, "hazard_types": [{"key": "road_block", "label": "Road blocked", "icon": "barrier", "is_hazard": true}, {"key": "car_on_sidewalk", "label": "Car on sidewalk", "icon": "car", "is_hazard": true}, {"key": "car_on_crosswalk", "label": "Car on crosswalk", "icon": "car", "is_hazard": true}, {"key": "car_in_bike_lane", "label": "Car in bike lane", "icon": "car", "is_hazard": true}, {"key": "pothole_damage", "label": "Pothole / damage", "icon": "pothole", "is_hazard": true}, {"key": "construction_debris", "label": "Construction debris", "icon": "cone", "is_hazard": true}, {"key": "informal_shortcut", "label": "Informal shortcut path", "icon": "footpath", "is_hazard": false}, {"key": "other", "label": "Other", "icon": "warning", "is_hazard": true}, {"key": "none", "label": "No hazard found", "icon": "check", "is_hazard": false}], "conditions": [{"key": "green", "hex": "#2E7D32", "label": "Clear", "meaning": "Clear / comfortable"}, {"key": "amber", "hex": "#F9A825", "label": "Caution", "meaning": "Minor issue or aging report"}, {"key": "red", "hex": "#C62828", "label": "Hazard", "meaning": "Fresh, significant hazard"}, {"key": "grey", "hex": "#757575", "label": "Unknown", "meaning": "Unknown, stale, disputed or needs review"}], "verification_statuses": [{"key": "unverified", "label": "Unverified"}, {"key": "ai_flagged", "label": "Needs review"}, {"key": "community_confirmed", "label": "Confirmed by riders"}, {"key": "verified", "label": "Verified"}, {"key": "disputed", "label": "Disputed"}, {"key": "resolved", "label": "Resolved"}], "feedback_actions": [{"key": "still_there", "label": "Still there"}, {"key": "resolved", "label": "It's gone"}, {"key": "dispute", "label": "Not accurate"}], "upload": {"max_photo_bytes": 10485760, "accepted_types": ["image/jpeg", "image/png", "image/webp"], "max_note_length": 500}, "map": {"center": {"lat": 41.9962, "lng": 21.4316}, "zoom": 15, "bounds": {"min_lat": 41.95, "min_lng": 21.3, "max_lat": 42.05, "max_lng": 21.55}}}, "report-feedback.json": {"id": 101, "lat": 41.9962, "lng": 21.4316, "hazard_type": "car_in_bike_lane", "description": "A silver car is parked across the painted bike lane.", "note": "Every morning around 8", "ai_confidence": 0.91, "needs_review": false, "verification_status": "community_confirmed", "condition": "red", "freshness_weight": 1.0, "created_at": "2026-10-17T08:05:00+02:00", "last_confirmed_at": "2026-10-17T11:20:00+02:00", "photo_url": "/media/reports/2026/10/101.jpg", "is_synthetic": false, "feedback_counts": {"still_there": 3, "resolved": 0, "dispute": 0}}, "routes-compare.json": {"scenario": {"id": "city-park-to-square", "name": "City Park \u2192 Macedonia Square", "from": {"name": "City Park", "lat": 41.9993, "lng": 21.418}, "to": {"name": "Macedonia Square", "lat": 41.9962, "lng": 21.4316}}, "recommended_route_id": "park-inner", "routes": [{"id": "park-inner", "name": "Through the park", "geometry": {"type": "LineString", "coordinates": [[21.418, 41.9993], [21.4251, 41.9978], [21.4316, 41.9962]]}, "length_m": 1380, "score": 84, "condition": "green", "hazards_on_route": [102], "explanation": ["Mostly separated paths", "1 informal shortcut (information only)", "No fresh hazards reported"]}, {"id": "quay-bike-lane", "name": "Quay bike lane", "geometry": {"type": "LineString", "coordinates": [[21.418, 41.9993], [21.429, 41.9958], [21.4316, 41.9962]]}, "length_m": 1210, "score": 46, "condition": "red", "hazards_on_route": [101], "explanation": ["Shortest option", "Car in bike lane, confirmed by 2 riders, 1 h ago"]}]}, "reports.json": {"type": "FeatureCollection", "truncated": false, "features": [{"type": "Feature", "id": 101, "geometry": {"type": "Point", "coordinates": [21.4316, 41.9962]}, "properties": {"id": 101, "hazard_type": "car_in_bike_lane", "description": "A silver car is parked across the painted bike lane.", "note": "Every morning around 8", "ai_confidence": 0.91, "needs_review": false, "verification_status": "community_confirmed", "condition": "red", "freshness_weight": 0.86, "created_at": "2026-10-17T08:05:00+02:00", "last_confirmed_at": "2026-10-17T09:40:00+02:00", "photo_url": "/media/reports/2026/10/101.jpg", "is_synthetic": false, "feedback_counts": {"still_there": 2, "resolved": 0, "dispute": 0}}}, {"type": "Feature", "id": 102, "geometry": {"type": "Point", "coordinates": [21.4251, 41.9978]}, "properties": {"id": 102, "hazard_type": "informal_shortcut", "description": "A worn dirt path cuts diagonally through the grass.", "note": "", "ai_confidence": 0.78, "needs_review": false, "verification_status": "unverified", "condition": "green", "freshness_weight": 0.99, "created_at": "2026-10-16T17:30:00+02:00", "last_confirmed_at": "2026-10-16T17:30:00+02:00", "photo_url": null, "is_synthetic": true, "feedback_counts": {"still_there": 0, "resolved": 0, "dispute": 0}}}, {"type": "Feature", "id": 104, "geometry": {"type": "Point", "coordinates": [21.4262, 41.9989]}, "properties": {"id": 104, "hazard_type": "pothole_damage", "description": "A deep pothole sits on the right edge of the lane, filled with water.", "note": "Hard to see at night", "ai_confidence": 0.83, "needs_review": false, "verification_status": "unverified", "condition": "amber", "freshness_weight": 0.62, "created_at": "2026-10-16T19:10:00+02:00", "last_confirmed_at": "2026-10-16T19:10:00+02:00", "photo_url": null, "is_synthetic": true, "feedback_counts": {"still_there": 0, "resolved": 0, "dispute": 0}}}, {"type": "Feature", "id": 105, "geometry": {"type": "Point", "coordinates": [21.434, 41.993]}, "properties": {"id": 105, "hazard_type": "road_block", "description": "Metal barriers close the bike lane across its full width.", "note": "", "ai_confidence": 0.95, "needs_review": false, "verification_status": "community_confirmed", "condition": "red", "freshness_weight": 0.94, "created_at": "2026-10-17T07:20:00+02:00", "last_confirmed_at": "2026-10-17T10:05:00+02:00", "photo_url": null, "is_synthetic": true, "feedback_counts": {"still_there": 4, "resolved": 0, "dispute": 0}}}, {"type": "Feature", "id": 106, "geometry": {"type": "Point", "coordinates": [21.4355, 42.0005]}, "properties": {"id": 106, "hazard_type": "construction_debris", "description": "", "note": "Sand pile from the building site", "ai_confidence": null, "needs_review": true, "verification_status": "ai_flagged", "condition": "grey", "freshness_weight": 0.71, "created_at": "2026-10-17T06:45:00+02:00", "last_confirmed_at": "2026-10-17T06:45:00+02:00", "photo_url": null, "is_synthetic": true, "feedback_counts": {"still_there": 1, "resolved": 0, "dispute": 0}}}, {"type": "Feature", "id": 107, "geometry": {"type": "Point", "coordinates": [21.4228, 41.9946]}, "properties": {"id": 107, "hazard_type": "car_on_sidewalk", "description": "Two cars are parked fully on the sidewalk, blocking the ramp.", "note": "", "ai_confidence": 0.89, "needs_review": false, "verification_status": "unverified", "condition": "red", "freshness_weight": 0.97, "created_at": "2026-10-17T09:55:00+02:00", "last_confirmed_at": "2026-10-17T09:55:00+02:00", "photo_url": null, "is_synthetic": true, "feedback_counts": {"still_there": 0, "resolved": 0, "dispute": 0}}}, {"type": "Feature", "id": 108, "geometry": {"type": "Point", "coordinates": [21.4195, 41.9981]}, "properties": {"id": 108, "hazard_type": "informal_shortcut", "description": "A trodden path links the park gate to the cycle track.", "note": "Nice shortcut, a bit muddy", "ai_confidence": 0.74, "needs_review": false, "verification_status": "unverified", "condition": "green", "freshness_weight": 0.9, "created_at": "2026-10-15T16:00:00+02:00", "last_confirmed_at": "2026-10-15T16:00:00+02:00", "photo_url": null, "is_synthetic": true, "feedback_counts": {"still_there": 0, "resolved": 0, "dispute": 0}}}, {"type": "Feature", "id": 109, "geometry": {"type": "Point", "coordinates": [21.429, 41.9915]}, "properties": {"id": 109, "hazard_type": "car_on_crosswalk", "description": "A white van is stopped across the zebra crossing.", "note": "", "ai_confidence": 0.66, "needs_review": false, "verification_status": "disputed", "condition": "grey", "freshness_weight": 0.35, "created_at": "2026-10-16T12:30:00+02:00", "last_confirmed_at": "2026-10-16T12:30:00+02:00", "photo_url": null, "is_synthetic": true, "feedback_counts": {"still_there": 1, "resolved": 0, "dispute": 3}}}]}, "segments.json": {"type": "FeatureCollection", "features": [{"type": "Feature", "id": 7, "geometry": {"type": "LineString", "coordinates": [[21.429, 41.9958], [21.4316, 41.9962], [21.4345, 41.9965]]}, "properties": {"id": 7, "name": "Kej 13 Noemvri", "kind": "bike_lane", "condition": "red", "score": 42, "length_m": 460, "hazard_report_ids": [101], "is_synthetic": true}}, {"type": "Feature", "id": 8, "geometry": {"type": "LineString", "coordinates": [[21.418, 41.9993], [21.4228, 41.998599999999996], [21.4262, 41.9989]]}, "properties": {"id": 8, "name": "Partizanska", "kind": "road", "condition": "amber", "score": 61, "length_m": 820, "hazard_report_ids": [104], "is_synthetic": true}}, {"type": "Feature", "id": 9, "geometry": {"type": "LineString", "coordinates": [[21.418, 41.9993], [21.421, 41.9985], [21.4251, 41.9978]]}, "properties": {"id": 9, "name": "City Park path", "kind": "shared_path", "condition": "green", "score": 88, "length_m": 640, "hazard_report_ids": [], "is_synthetic": true}}, {"type": "Feature", "id": 10, "geometry": {"type": "LineString", "coordinates": [[21.418, 41.999], [21.4195, 41.9981]]}, "properties": {"id": 10, "name": "", "kind": "informal_path", "condition": "green", "score": 74, "length_m": 180, "hazard_report_ids": [108], "is_synthetic": true}}]}};</script>
+<script>
+// "mock" = read /static/web/mock/*.json, "live" = call /api/...
+// Flip one key to "live" when backend announces the milestone (see docs/plan/WORKFLOW.md).
+const API_MODE = {
+  meta: "mock", reports: "mock", reportDetail: "mock", createReport: "mock",
+  feedback: "mock", segments: "mock", scenarios: "mock", compare: "mock",
+};
+
+// Fake latency for mock POSTs so the loading states get exercised (ms).
+const MOCK_POST_DELAY = { createReport: 3500, feedback: 600 };
+
+// Set to "ai_rate_limited" to make the mock upload return the 429 example instead.
+const MOCK_FORCE_ERROR = null;
+
+</script>
+<script>
+/* BikeAble API client. One function per contract endpoint (docs/plan/API_CONTRACT.md).
+ * Each one reads API_MODE[key]: "mock" serves web/static/web/mock/*.json, "live" calls /api/. */
+const BikeAPI = (() => {
+  const MOCK_FILES = {
+    meta: "meta.json", reports: "reports.json", reportDetail: "report-101.json",
+    createReport: "report-create.json", feedback: "report-feedback.json",
+    segments: "segments.json", scenarios: "scenarios.json", compare: "routes-compare.json",
+    rateLimited: "error-ai-rate-limited.json",
+  };
+  const mockBase = document.body.dataset.mockBase || "/static/web/mock/";
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  class ApiError extends Error {
+    constructor(status, body) {
+      const e = (body && body.error) || {};
+      super(e.message || "Something went wrong. Try again in a moment.");
+      this.status = status;
+      this.code = e.code || (status === 0 ? "network_error" : "server_error");
+      this.fields = e.fields || {};
+      this.retryAfter = e.retry_after_seconds || null;
+    }
+  }
+
+  async function readMock(key) {
+    const file = MOCK_FILES[key];
+    if (window.BIKEABLE_MOCKS) return structuredClone(window.BIKEABLE_MOCKS[file]);
+    const res = await fetch(mockBase + file);
+    return res.json();
+  }
+
+  async function live(url, { method = "GET", body, json, timeoutMs = 30000 } = {}) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+    const headers = { Accept: "application/json" };
+    if (method !== "GET") {
+      const t = document.querySelector("[name=csrfmiddlewaretoken]");
+      if (t) headers["X-CSRFToken"] = t.value;
+    }
+    if (json !== undefined) { headers["Content-Type"] = "application/json"; body = JSON.stringify(json); }
+    let res;
+    try {
+      res = await fetch(url, { method, body, headers, signal: ctrl.signal, credentials: "same-origin" });
+    } catch (err) {
+      throw new ApiError(0, { error: { code: err.name === "AbortError" ? "timeout" : "network_error",
+        message: err.name === "AbortError" ? "That took too long. Check your connection and try again." : "Can't reach the server. Check your connection." } });
+    } finally { clearTimeout(timer); }
+    let data = null;
+    try { data = await res.json(); } catch (_) { /* empty body */ }
+    if (!res.ok) throw new ApiError(res.status, data);
+    return data;
+  }
+
+  const isMock = (key) => (window.API_MODE || API_MODE)[key] !== "live";
+  const qs = (o) => new URLSearchParams(Object.entries(o).filter(([, v]) => v !== undefined && v !== null)).toString();
+
+  return {
+    ApiError,
+    meta: () => (isMock("meta") ? readMock("meta") : live("/api/meta/")),
+    reports: async ({ bbox, includeResolved = false } = {}) => {
+      if (!isMock("reports")) return live(`/api/reports/?${qs({ bbox, include_resolved: includeResolved })}`);
+      const fc = await readMock("reports");
+      if (!includeResolved) fc.features = fc.features.filter((f) => f.properties.verification_status !== "resolved");
+      return fc;
+    },
+    reportDetail: async (id) => {
+      if (!isMock("reportDetail")) return live(`/api/reports/${id}/`);
+      if (Number(id) === 101) return readMock("reportDetail");
+      const fc = await readMock("reports");
+      const f = fc.features.find((x) => x.id === Number(id));
+      if (!f) throw new ApiError(404, { error: { code: "not_found", message: "This report no longer exists." } });
+      return { ...f.properties, lat: f.geometry.coordinates[1], lng: f.geometry.coordinates[0] };
+    },
+    createReport: async ({ photo, lat, lng, note }) => {
+      if (!isMock("createReport")) {
+        const form = new FormData();
+        form.append("photo", photo); form.append("lat", lat.toFixed(6)); form.append("lng", lng.toFixed(6));
+        if (note) form.append("note", note);
+        return live("/api/reports/", { method: "POST", body: form, timeoutMs: 35000 });
+      }
+      await sleep(MOCK_POST_DELAY.createReport);
+      if (MOCK_FORCE_ERROR === "ai_rate_limited") throw new ApiError(429, await readMock("rateLimited"));
+      const r = await readMock("createReport");
+      return { ...r, lat: Number(lat.toFixed(6)), lng: Number(lng.toFixed(6)), note: note || "" };
+    },
+    feedback: async (report, action) => {
+      if (!isMock("feedback")) return live(`/api/reports/${report.id}/feedback/`, { method: "POST", json: { action } });
+      await sleep(MOCK_POST_DELAY.feedback);
+      // Mock keeps the contract shape but applies the action to the report you clicked.
+      const counts = { ...report.feedback_counts, [action]: report.feedback_counts[action] + 1 };
+      const now = new Date().toISOString();
+      return { ...report, feedback_counts: counts, ...(action === "still_there" ? { last_confirmed_at: now, freshness_weight: 1 } : {}) };
+    },
+    segments: ({ bbox } = {}) => (isMock("segments") ? readMock("segments") : live(`/api/segments/?${qs({ bbox })}`)),
+    scenarios: () => (isMock("scenarios") ? readMock("scenarios") : live("/api/routes/scenarios/")),
+    compare: async (scenario) => {
+      if (!isMock("compare")) return live(`/api/routes/compare/?${qs({ scenario })}`);
+      return readMock("compare");
+    },
+  };
+})();
+
+</script>
+<script>
+/* BikeAble frontend. Vanilla JS, no build step.
+ * Views (home, map, report, routes) live in one page and switch on location.hash. */
+(() => {
+  "use strict";
+
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+  const h = (tag, attrs = {}, ...kids) => {
+    const n = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) {
+      if (v === null || v === undefined || v === false) continue;
+      if (k === "class") n.className = v;
+      else if (k === "html") n.innerHTML = v;
+      else if (k === "style") n.setAttribute("style", v);
+      else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
+      else n.setAttribute(k, v === true ? "" : v);
+    }
+    for (const kid of kids.flat()) if (kid !== null && kid !== undefined && kid !== false) n.append(kid);
+    return n;
+  };
+  const cssVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const store = {
+    get: (k) => { try { return sessionStorage.getItem(k); } catch (_) { return null; } },
+    set: (k, v) => { try { sessionStorage.setItem(k, v); } catch (_) { /* storage blocked */ } },
+  };
+
+  const state = {
+    meta: null, reports: null, segments: null,
+    hiddenTypes: new Set(), showSegments: true, showResolved: false,
+    activeReport: null, sentFeedback: new Set(),
+  };
+
+  /* ---------------------------------------------------------------- icons (map meta.icon hints) */
+  const ICONS = {
+    barrier: '<path d="M3 9h18v5H3z"/><path d="M7 9l-3 5M12 9l-3 5M17 9l-3 5M21 9l-3 5"/><path d="M5 14v5M19 14v5"/>',
+    car: '<path d="M4 15l1.5-5A2 2 0 0 1 7.4 8.5h9.2a2 2 0 0 1 1.9 1.5L20 15"/><rect x="3" y="15" width="18" height="4" rx="1"/><circle cx="7.5" cy="19" r="1.5"/><circle cx="16.5" cy="19" r="1.5"/>',
+    pothole: '<ellipse cx="12" cy="14" rx="8" ry="4"/><path d="M8 13.5c1.5 1 6.5 1 8 0"/><path d="M5 8l2 2M19 8l-2 2M12 5v3"/>',
+    cone: '<path d="M10 4h4l4 15H6z"/><path d="M8.5 10h7M7.5 14h9"/><path d="M4 19h16"/>',
+    footpath: '<path d="M8 4c1.5 0 2 1.5 2 3s-1 3-2 3-2-1.5-2-3 .5-3 2-3zM16 12c1.5 0 2 1.5 2 3s-1 3-2 3-2-1.5-2-3 .5-3 2-3z"/><path d="M7 12v1M15 20v1"/>',
+    warning: '<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17v.5"/>',
+    check: '<path d="M5 12l4 4 10-10"/>',
+  };
+  const icon = (name) => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[name] || ICONS.warning}</svg>`;
+  const CAMERA = '<svg viewBox="0 0 64 64" aria-hidden="true"><rect x="8" y="18" width="48" height="34" rx="4"/><circle cx="32" cy="35" r="10"/><path d="M22 18 L26 11 L38 11 L42 18"/><path d="M10 54 L54 14"/></svg>';
+
+  /* ---------------------------------------------------------------- meta lookups (never hardcode labels) */
+  const hazard = (key) => state.meta.hazard_types.find((t) => t.key === key) || state.meta.hazard_types.find((t) => t.key === "other");
+  const condition = (key) => state.meta.conditions.find((c) => c.key === key) || state.meta.conditions.find((c) => c.key === "grey");
+  const statusLabel = (key) => (state.meta.verification_statuses.find((s) => s.key === key) || { label: key }).label;
+
+  const timeAgo = (iso) => {
+    const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+    if (s < 60) return "just now";
+    if (s < 3600) return `${Math.round(s / 60)} min ago`;
+    if (s < 86400) return `${Math.round(s / 3600)} h ago`;
+    const d = Math.round(s / 86400);
+    return `${d} day${d > 1 ? "s" : ""} ago`;
+  };
+
+  const toast = (msg, ms = 4200) => {
+    const t = $("#toast");
+    t.textContent = msg; t.hidden = false;
+    clearTimeout(toast.timer);
+    toast.timer = setTimeout(() => { t.hidden = true; }, ms);
+  };
+
+  const photoInto = (box, url, label) => {
+    box.replaceChildren();
+    const placeholder = () => box.replaceChildren(h("div", { class: "no-photo", html: `${CAMERA}<span>No photo</span>` }));
+    if (!url) return placeholder();
+    const img = h("img", { src: url, alt: `Photo of: ${label}`, loading: "lazy" });
+    img.addEventListener("error", placeholder, { once: true });
+    box.append(img);
+  };
+
+  /* ================================================================ LOADER */
+  const LOADER_LINES = ["Pumping the tyres", "Checking the bike lanes", "Asking riders what they saw", "Unfolding the map"];
+  const loader = {
+    el: $("#loader"),
+    async run(work, { full = true } = {}) {
+      const el = this.el;
+      el.hidden = false;
+      el.classList.remove("is-leaving");
+      el.classList.toggle("is-quick", !full);
+      let line = 0;
+      const msg = $("#loader-msg");
+      msg.textContent = LOADER_LINES[0];
+      const ticker = full ? setInterval(() => {
+        line = (line + 1) % LOADER_LINES.length;
+        msg.style.opacity = 0;
+        setTimeout(() => { msg.textContent = LOADER_LINES[line]; msg.style.opacity = 1; }, 180);
+      }, 1200) : null;
+      // one full ride across the strip (2.4s) so the bike never vanishes mid-way
+      const minTime = full && !reduced ? 2400 : 250;
+      const [result] = await Promise.all([work, new Promise((r) => setTimeout(r, minTime))]);
+      clearInterval(ticker);
+      el.classList.add("is-leaving");
+      setTimeout(() => { el.hidden = true; }, reduced ? 150 : 700);
+      return result;
+    },
+  };
+
+  /* ================================================================ ROUTER + VIEW TRANSITIONS */
+  const VIEWS = ["home", "map", "report", "routes"];
+  let current = null;
+  const viewHooks = {};
+
+  function show(name, { instant = false } = {}) {
+    if (!VIEWS.includes(name)) name = "home";
+    if (name === current) return;
+    const prev = current && $(`.view[data-view="${current}"]`);
+    const next = $(`.view[data-view="${name}"]`);
+    const enter = () => {
+      $$(".view").forEach((v) => { v.hidden = v !== next; v.classList.remove("is-leaving"); });
+      next.classList.add("is-entering");
+      clearTimeout(show.timer);
+      show.timer = setTimeout(() => next.classList.remove("is-entering"), 1500);
+      window.scrollTo({ top: 0 });
+      $$("[data-nav]").forEach((a) => a.dataset.nav === name ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
+      document.title = name === "home" ? "BikeAble" : `${{ map: "Map", report: "Report a hazard", routes: "Routes" }[name]} · BikeAble`;
+      viewHooks[name] && viewHooks[name]();
+    };
+    current = name;
+    if (prev && !instant && !reduced) {
+      prev.classList.add("is-leaving");
+      setTimeout(enter, 300);
+    } else enter();
+  }
+  const route = () => show((location.hash || "#home").slice(1).split("/")[0]);
+
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest("a[data-link]");
+    if (!a) return;
+    const sub = e.target.closest("[data-sub]");
+    if (sub) applyLayerPreset(sub.dataset.sub);
+    if (!$("#menu").hidden) closeMenu();
+  });
+
+  /* ================================================================ MENU (index cards) */
+  const menu = $("#menu");
+  const menuBtn = $("#menu-btn");
+  function openMenu() {
+    menu.hidden = false;
+    menu.classList.remove("is-closing");
+    menuBtn.setAttribute("aria-expanded", "true");
+    $("#main").inert = true;
+    setTimeout(() => $(".card", menu).focus(), 60);
+  }
+  function closeMenu() {
+    if (menu.hidden) return;
+    menuBtn.setAttribute("aria-expanded", "false");
+    $("#main").inert = false;
+    menu.classList.add("is-closing");
+    setTimeout(() => { menu.hidden = true; menu.classList.remove("is-closing"); }, reduced ? 150 : 360);
+    menuBtn.focus({ preventScroll: true });
+  }
+  menuBtn.addEventListener("click", () => (menu.hidden ? openMenu() : closeMenu()));
+  menu.addEventListener("click", (e) => { if (e.target.closest("[data-close-menu]")) closeMenu(); });
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    if (!menu.hidden) closeMenu();
+    else if (!$("#layers").hidden) toggleLayers(false);
+    else if (!$("#detail").hidden) closeDetail();
+  });
+  $("#replay-intro").addEventListener("click", () => {
+    closeMenu();
+    setTimeout(() => loader.run(Promise.resolve(), { full: true }).then(() => replayEntrance()), 380);
+  });
+
+  /* ================================================================ HOME */
+  function renderHome() {
+    const feats = state.reports.features;
+    const count = (fn) => feats.filter(fn).length;
+    const cond = (k) => count((f) => f.properties.condition === k);
+    const rows = [
+      ["Active reports", feats.length, null],
+      [condition("red").label, cond("red"), "red"],
+      [condition("amber").label, cond("amber"), "amber"],
+      [condition("grey").label, cond("grey"), "grey"],
+      [hazard("informal_shortcut").label, count((f) => f.properties.hazard_type === "informal_shortcut"), "green"],
+      ["Rider confirmations", feats.reduce((s, f) => s + f.properties.feedback_counts.still_there, 0), null],
+    ];
+    $("#receipt-rows").replaceChildren(...rows.map(([label, n, c]) => h("li", {},
+      c ? h("span", { class: "sw", style: `background:var(--c-${c})` }) : null,
+      h("span", {}, label), h("b", {}, String(n).padStart(2, "0")))));
+    const demo = count((f) => f.properties.is_synthetic);
+    $("#receipt-demo").textContent = demo ? `${demo} of ${feats.length} are demo data.` : "";
+    const d = new Date();
+    $("#receipt-date").textContent = `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}.${d.getFullYear()}`;
+  }
+
+  async function renderTicket() {
+    try {
+      const { scenarios } = await BikeAPI.scenarios();
+      if (!scenarios.length) return;
+      const cmp = await BikeAPI.compare(scenarios[0].id);
+      const best = cmp.routes.find((r) => r.id === cmp.recommended_route_id) || cmp.routes[0];
+      $("#ticket-route").textContent = cmp.scenario.name;
+      $("#ticket-meta").textContent = `Take “${best.name}” · score ${best.score}/100 · ${(best.length_m / 1000).toFixed(1)} km`;
+    } catch (_) {
+      $("#ticket-meta").textContent = "Compare two ways across town";
+    }
+  }
+
+  function tickChecklist() {
+    const todo = $$(".checklist li:not(.is-done)");
+    todo.forEach((li, i) => setTimeout(() => li.classList.add("is-done"), 1400 + i * 700));
+  }
+
+  function replayEntrance() {
+    const v = $(`.view[data-view="${current}"]`);
+    v.classList.remove("is-entering"); void v.offsetWidth; v.classList.add("is-entering");
+    setTimeout(() => v.classList.remove("is-entering"), 1500);
+    if (current === "home") {
+      $$(".checklist li").forEach((li, i) => li.classList.toggle("is-done", i < 2));
+      tickChecklist();
+    }
+  }
+
+  /* organize: FLIP between scattered and tidy */
+  const collage = $("#collage");
+  $("#organize-btn").addEventListener("click", (e) => {
+    const pieces = $$("[data-piece]", collage);
+    const first = new Map(pieces.map((p) => [p, p.getBoundingClientRect()]));
+    pieces.forEach((p) => { p.style.translate = ""; });
+    const tidy = collage.classList.toggle("is-tidy");
+    e.currentTarget.setAttribute("aria-pressed", String(tidy));
+    $("span", e.currentTarget).textContent = tidy ? "Scatter" : "Organize";
+    if (reduced) return;
+    pieces.forEach((p) => {
+      const a = first.get(p), b = p.getBoundingClientRect();
+      const dx = a.left - b.left, dy = a.top - b.top;
+      if (!dx && !dy) return;
+      p.animate([{ translate: `${dx}px ${dy}px` }, { translate: "0 0" }], { duration: 560, easing: "cubic-bezier(0.16, 1, 0.3, 1)" });
+    });
+  });
+
+  /* drag pieces around the board (fine pointers only) */
+  if (window.matchMedia("(pointer: fine)").matches) {
+    $$("[data-piece]", collage).forEach((p) => {
+      p.classList.add("is-draggable");
+      let sx, sy, ox, oy, moved;
+      p.addEventListener("pointerdown", (e) => {
+        if (e.target.closest("a, button") && !p.matches("a")) return;
+        const t = (p.style.translate || "0px 0px").split(" ").map(parseFloat);
+        [ox, oy] = [t[0] || 0, t[1] || 0]; sx = e.clientX; sy = e.clientY; moved = false;
+        p.setPointerCapture(e.pointerId);
+      });
+      p.addEventListener("pointermove", (e) => {
+        if (!p.hasPointerCapture(e.pointerId)) return;
+        const dx = e.clientX - sx, dy = e.clientY - sy;
+        if (!moved && Math.hypot(dx, dy) < 6) return;
+        moved = true; p.classList.add("is-dragging");
+        p.style.translate = `${ox + dx}px ${oy + dy}px`;
+      });
+      const end = (e) => { if (p.hasPointerCapture(e.pointerId)) p.releasePointerCapture(e.pointerId); p.classList.remove("is-dragging"); };
+      p.addEventListener("pointerup", end);
+      p.addEventListener("pointercancel", end);
+      p.addEventListener("click", (e) => { if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
+    });
+  }
+
+  /* ================================================================ MAP */
+  const TILE_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
+  const TILE_ATTR = "© OpenStreetMap contributors";
+  const mapBounds = () => {
+    const b = state.meta.map.bounds;
+    return L.latLngBounds([b.min_lat, b.min_lng], [b.max_lat, b.max_lng]);
+  };
+  const newMap = (id, opts = {}) => {
+    const m = L.map(id, { zoomControl: true, attributionControl: true, maxBounds: mapBounds().pad(0.2), ...opts })
+      .setView([state.meta.map.center.lat, state.meta.map.center.lng], state.meta.map.zoom);
+    m.attributionControl.addAttribution(TILE_ATTR);
+    m.zoomControl.setPosition("topright");
+    return m;
+  };
+
+  let map = null, reportLayer = null, segmentLayer = null;
+  const markers = new Map();
+
+  function pinIcon(p, i) {
+    const t = hazard(p.hazard_type);
+    const cls = ["pin", "pin-drop", p.is_synthetic && "is-synthetic", !t.is_hazard && "is-info"].filter(Boolean).join(" ");
+    const opacity = Math.max(0.55, p.freshness_weight ?? 1);
+    return L.divIcon({
+      className: "", iconSize: [36, 44], iconAnchor: [18, 40],
+      html: `<div class="${cls}" style="--c:var(--c-${condition(p.condition).key});--i:${i};opacity:${opacity}"><div class="pin__head">${icon(t.icon)}</div></div>`,
+    });
+  }
+
+  function drawReports() {
+    if (!map) return;
+    reportLayer.clearLayers(); markers.clear();
+    state.reports.features
+      .filter((f) => !state.hiddenTypes.has(hazard(f.properties.hazard_type).key))
+      .forEach((f, i) => {
+        const [lng, lat] = f.geometry.coordinates;
+        const m = L.marker([lat, lng], { icon: pinIcon(f.properties, i), keyboard: true, title: hazard(f.properties.hazard_type).label, riseOnHover: true });
+        m.on("click", () => openDetail(f.properties.id));
+        m.addTo(reportLayer);
+        markers.set(f.properties.id, m);
+      });
+  }
+
+  function drawSegments() {
+    if (!map) return;
+    segmentLayer.clearLayers();
+    if (!state.showSegments || !state.segments) return;
+    L.geoJSON(state.segments, {
+      style: (f) => ({
+        color: condition(f.properties.condition).hex,
+        weight: f.properties.kind === "bike_lane" ? 6 : 4,
+        opacity: 0.85, lineCap: "round",
+        dashArray: f.properties.kind === "informal_path" ? "2 9" : f.properties.kind === "road" ? "10 6" : null,
+      }),
+      onEachFeature: (f, layer) => layer.bindTooltip(`${f.properties.name || "Unnamed path"} · ${f.properties.score}/100`, { sticky: true }),
+    }).addTo(segmentLayer);
+  }
+
+  async function loadReports() {
+    state.reports = await BikeAPI.reports({ includeResolved: state.showResolved, bbox: map ? map.getBounds().toBBoxString() : undefined });
+    if (state.reports.truncated) toast("Showing the newest 500 reports. Zoom in to see the rest.");
+    drawReports();
+  }
+
+  function buildLayers() {
+    const box = $("#layer-types");
+    box.querySelectorAll("label").forEach((n) => n.remove());
+    state.meta.hazard_types.filter((t) => t.key !== "none").forEach((t) => {
+      const id = `lt-${t.key}`;
+      const input = h("input", { type: "checkbox", id, checked: !state.hiddenTypes.has(t.key) });
+      input.addEventListener("change", () => {
+        input.checked ? state.hiddenTypes.delete(t.key) : state.hiddenTypes.add(t.key);
+        drawReports();
+      });
+      box.append(h("label", { class: "check", for: id }, input,
+        h("span", { class: "box", "aria-hidden": "true", html: '<svg viewBox="0 0 20 20"><path d="M4 11 L8 15 L16 4"/></svg>' }), t.label));
+    });
+    $("#show-segments").checked = state.showSegments;
+    $("#show-resolved").checked = state.showResolved;
+  }
+  $("#show-segments").addEventListener("change", (e) => { state.showSegments = e.target.checked; drawSegments(); });
+  $("#show-resolved").addEventListener("change", async (e) => { state.showResolved = e.target.checked; await loadReports(); });
+
+  function applyLayerPreset(preset) {
+    const keys = state.meta ? state.meta.hazard_types.map((t) => t.key) : [];
+    if (preset === "shortcuts") { state.hiddenTypes = new Set(keys.filter((k) => k !== "informal_shortcut")); state.showSegments = false; }
+    else if (preset === "segments") { state.hiddenTypes = new Set(keys); state.showSegments = true; }
+    else { state.hiddenTypes = new Set(["informal_shortcut"]); state.showSegments = true; }
+    if (map) { buildLayers(); drawReports(); drawSegments(); }
+  }
+
+  function toggleLayers(open) {
+    const panel = $("#layers"), btn = $("#layers-btn");
+    open = open ?? panel.hidden;
+    btn.setAttribute("aria-expanded", String(open));
+    $("#legend").classList.toggle("is-tucked", open);
+    if (open) { panel.hidden = false; panel.classList.remove("is-closing"); }
+    else if (!panel.hidden) {
+      panel.classList.add("is-closing");
+      setTimeout(() => { panel.hidden = true; panel.classList.remove("is-closing"); }, reduced ? 150 : 320);
+    }
+  }
+  $("#layers-btn").addEventListener("click", () => toggleLayers());
+
+  function buildLegend() {
+    $("#legend").replaceChildren(
+      h("b", {}, "KEY"),
+      h("ul", {}, state.meta.conditions.map((c) => h("li", { title: c.meaning }, h("span", { class: "sw", style: `background:var(--c-${c.key})` }), c.label))),
+      h("p", { class: "demo" }, "Dashed ring = demo data. Faded = older report."));
+  }
+
+  viewHooks.map = () => {
+    if (!map) {
+      map = newMap("map");
+      segmentLayer = L.layerGroup().addTo(map);
+      reportLayer = L.layerGroup().addTo(map);
+      buildLayers(); buildLegend();
+      drawSegments(); drawReports();
+      let t;
+      map.on("moveend", () => { clearTimeout(t); t = setTimeout(() => loadReports().catch(() => {}), 400); });
+      map.on("click", () => closeDetail());
+    } else {
+      buildLayers(); drawReports(); drawSegments();
+    }
+    setTimeout(() => map.invalidateSize(), 60);
+    if (state.focusReport) { const id = state.focusReport; state.focusReport = null; setTimeout(() => openDetail(id), 500); }
+  };
+
+  /* ---------------------------------------------------------------- report detail polaroid */
+  function renderReportCard(r, { photo, chips, title, desc, note, facts, feedback }) {
+    const t = hazard(r.hazard_type), c = condition(r.condition);
+    photoInto(photo, r.photo_url, t.label);
+    chips.replaceChildren(...[
+      h("span", { class: "chip chip--cond", style: `--c:var(--c-${c.key})` }, c.label),
+      h("span", { class: "chip" }, statusLabel(r.verification_status)),
+      r.needs_review && h("span", { class: "chip chip--warn" }, "Needs review"),
+      r.is_synthetic && h("span", { class: "chip chip--demo" }, "Demo data")].filter(Boolean));
+    title.textContent = t.label;
+    desc.textContent = r.description;
+    if (note) note.textContent = r.note ? `“${r.note}”` : "";
+    if (facts) facts.replaceChildren(
+      h("dt", {}, "Reported"), h("dd", {}, timeAgo(r.created_at)),
+      h("dt", {}, "Last seen"), h("dd", {}, timeAgo(r.last_confirmed_at)),
+      h("dt", {}, "AI sure"), h("dd", {}, r.ai_confidence === null ? "Not analysed" : `${Math.round(r.ai_confidence * 100)}%`));
+    if (feedback) feedback.replaceChildren(...state.meta.feedback_actions.map((a) => {
+      const sent = state.sentFeedback.has(`${r.id}:${a.key}`);
+      return h("button", { type: "button", class: "fb-btn", "data-action": a.key, "aria-pressed": String(sent), onclick: () => sendFeedback(r, a.key) },
+        h("b", {}, String(r.feedback_counts[a.key] ?? 0)), a.label);
+    }));
+  }
+
+  async function openDetail(id) {
+    const card = $("#detail");
+    markers.forEach((m, mid) => m.getElement()?.querySelector(".pin")?.classList.toggle("is-active", mid === id));
+    $("#detail-msg").textContent = "";
+    let r = state.reports.features.find((f) => f.properties.id === id)?.properties;
+    try { r = await BikeAPI.reportDetail(id); } catch (err) { if (!r) { toast(err.message); return; } }
+    state.activeReport = r;
+    renderReportCard(r, { photo: $("#detail-photo"), chips: $("#detail-chips"), title: $("#detail-title"), desc: $("#detail-desc"), note: $("#detail-note"), facts: $("#detail-facts"), feedback: $("#detail-feedback") });
+    card.classList.remove("is-closing");
+    if (card.hidden) { card.hidden = false; } else if (!reduced) { card.animate([{ opacity: 0.4 }, { opacity: 1 }], { duration: 220 }); }
+  }
+
+  function closeDetail() {
+    const card = $("#detail");
+    if (card.hidden) return;
+    markers.forEach((m) => m.getElement()?.querySelector(".pin")?.classList.remove("is-active"));
+    card.classList.add("is-closing");
+    setTimeout(() => { card.hidden = true; card.classList.remove("is-closing"); }, reduced ? 150 : 320);
+    state.activeReport = null;
+  }
+  $("[data-close-detail]").addEventListener("click", closeDetail);
+
+  async function sendFeedback(r, action) {
+    const key = `${r.id}:${action}`;
+    const msg = $("#detail-msg");
+    if (state.sentFeedback.has(key)) { msg.textContent = "You already sent that for this report."; return; }
+    // optimistic: bump the count now, roll back if the server says no
+    const btn = $(`.fb-btn[data-action="${action}"]`, $("#detail-feedback"));
+    const btns = $$(".fb-btn", $("#detail-feedback"));
+    const before = r.feedback_counts[action];
+    btn.querySelector("b").textContent = before + 1;
+    btn.setAttribute("aria-pressed", "true");
+    btn.classList.remove("bump"); void btn.offsetWidth; btn.classList.add("bump");
+    btns.forEach((b) => { b.disabled = true; });
+    msg.textContent = "";
+    try {
+      const updated = await BikeAPI.feedback(r, action);
+      state.sentFeedback.add(key);
+      const f = state.reports.features.find((x) => x.properties.id === updated.id);
+      if (f) { const { lat, lng, ...props } = updated; Object.assign(f.properties, props); }
+      if (state.activeReport && state.activeReport.id === updated.id) {
+        state.activeReport = updated;
+        renderReportCard(updated, { photo: $("#detail-photo"), chips: $("#detail-chips"), title: $("#detail-title"), desc: $("#detail-desc"), note: $("#detail-note"), facts: $("#detail-facts"), feedback: $("#detail-feedback") });
+      }
+      drawReports();
+      markers.get(updated.id)?.getElement()?.querySelector(".pin")?.classList.add("is-active");
+    } catch (err) {
+      btn.querySelector("b").textContent = before;
+      btn.setAttribute("aria-pressed", "false");
+      if (err.code === "duplicate_feedback") { state.sentFeedback.add(key); btn.setAttribute("aria-pressed", "true"); msg.textContent = "You already sent that for this report."; }
+      else msg.textContent = err.message;
+      btns.forEach((b) => { b.disabled = false; });
+    }
+  }
+
+  /* ================================================================ REPORT */
+  let pickMap = null, pickMarker = null, picked = null, photoFile = null;
+  const PIN_SVG = '<svg viewBox="0 0 30 40"><path d="M15 39 C 15 39 3 24 3 14 a12 12 0 0 1 24 0 c0 10 -12 25 -12 25z" fill="var(--accent)" stroke="var(--paper)" stroke-width="2.5"/><circle cx="15" cy="14" r="4.5" fill="var(--paper)"/></svg>';
+
+  viewHooks.report = () => {
+    const up = state.meta.upload;
+    $("#photo-hint").textContent = `${up.accepted_types.map((t) => t.split("/")[1].toUpperCase().replace("JPEG", "JPEG")).join(", ")} · up to ${Math.round(up.max_photo_bytes / 1048576)} MB`;
+    $("#note").maxLength = up.max_note_length;
+    updateCount();
+    if (!pickMap) {
+      pickMap = newMap("pick-map");
+      pickMap.on("click", (e) => setPick(e.latlng));
+    }
+    setTimeout(() => pickMap.invalidateSize(), 80);
+  };
+
+  function setPick(latlng) {
+    $("#err-location").textContent = "";
+    if (!mapBounds().contains(latlng)) { $("#err-location").textContent = "That spot is outside the area BikeAble covers. Pick a place closer to the centre."; return; }
+    picked = latlng;
+    const icon = L.divIcon({ className: "", iconSize: [30, 40], iconAnchor: [15, 39], html: `<div class="pick-pin pin-drop">${PIN_SVG}</div>` });
+    if (pickMarker) pickMarker.setLatLng(latlng).setIcon(icon); else pickMarker = L.marker(latlng, { icon }).addTo(pickMap);
+    $("#where-coords").textContent = `${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)}`;
+  }
+
+  const drop = $("#drop");
+  ["dragenter", "dragover"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("is-over"); }));
+  ["dragleave", "drop"].forEach((ev) => drop.addEventListener(ev, () => drop.classList.remove("is-over")));
+  drop.addEventListener("drop", (e) => { e.preventDefault(); if (e.dataTransfer.files[0]) takePhoto(e.dataTransfer.files[0]); });
+  $("#photo").addEventListener("change", (e) => e.target.files[0] && takePhoto(e.target.files[0]));
+
+  async function takePhoto(file) {
+    const up = state.meta.upload, err = $("#err-photo");
+    err.textContent = "";
+    if (!up.accepted_types.includes(file.type)) { err.textContent = "That file type won't work. Use a JPEG, PNG or WebP photo."; return; }
+    if (file.size > up.max_photo_bytes) { err.textContent = `That photo is over ${Math.round(up.max_photo_bytes / 1048576)} MB. Pick a smaller one.`; return; }
+    photoFile = await shrink(file);
+    const prev = $("#photo-preview");
+    prev.src = URL.createObjectURL(photoFile);
+    prev.hidden = false;
+    $(".drop__empty").hidden = true;
+    $("#photo-caption").textContent = "got it";
+  }
+
+  // Resize to ~1600px JPEG in the browser: faster upload and drops EXIF/GPS.
+  async function shrink(file) {
+    try {
+      const bmp = await createImageBitmap(file);
+      const scale = Math.min(1, 1600 / Math.max(bmp.width, bmp.height));
+      if (scale === 1 && file.type === "image/jpeg") return file;
+      const c = h("canvas", { width: Math.round(bmp.width * scale), height: Math.round(bmp.height * scale) });
+      c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+      const blob = await new Promise((r) => c.toBlob(r, "image/jpeg", 0.85));
+      return blob ? new File([blob], "hazard.jpg", { type: "image/jpeg" }) : file;
+    } catch (_) { return file; }
+  }
+
+  const note = $("#note");
+  function updateCount() {
+    const max = state.meta ? state.meta.upload.max_note_length : 500;
+    $("#note-count").textContent = `${note.value.length} / ${max}`;
+    $("#note-count").classList.toggle("is-near", note.value.length > max * 0.9);
+  }
+  note.addEventListener("input", updateCount);
+
+  const ANALYZE_LINES = ["Reading your photo…", "Looking for cars and barriers…", "Checking the bike lane…", "Pinning it to the map…"];
+  $("#report-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const msg = $("#report-msg");
+    msg.textContent = "";
+    let ok = true;
+    if (!photoFile) { $("#err-photo").textContent = "Add a photo of the hazard first."; ok = false; }
+    if (!picked) { $("#err-location").textContent = "Tap the map where you saw it."; ok = false; }
+    if (!ok) return;
+
+    const btn = $("#submit-btn");
+    btn.disabled = true; btn.dataset.state = "loading";
+    const overlay = $("#analyzing");
+    overlay.hidden = false;
+    let line = 0;
+    $("#analyzing-msg").textContent = ANALYZE_LINES[0];
+    const ticker = setInterval(() => { line = (line + 1) % ANALYZE_LINES.length; $("#analyzing-msg").textContent = ANALYZE_LINES[line]; }, 2200);
+    try {
+      const r = await BikeAPI.createReport({ photo: photoFile, lat: picked.lat, lng: picked.lng, note: note.value.trim() });
+      showResult(r);
+    } catch (err) {
+      if (err.code === "ai_rate_limited") {
+        let left = err.retryAfter || 60;
+        msg.textContent = `${err.message} You can retry in ${left}s.`;
+        const cd = setInterval(() => { left -= 1; msg.textContent = left > 0 ? `${err.message} You can retry in ${left}s.` : "Ready. Try sending again."; if (left <= 0) { clearInterval(cd); btn.disabled = false; } }, 1000);
+        btn.dataset.state = "error";
+        clearInterval(ticker); overlay.hidden = true;
+        return;
+      }
+      const fieldMap = { photo: "#err-photo", lat: "#err-location", lng: "#err-location", note: "#err-note" };
+      Object.entries(err.fields || {}).forEach(([k, v]) => { if (fieldMap[k]) $(fieldMap[k]).textContent = v.join(" "); });
+      msg.textContent = err.message;
+      btn.dataset.state = "error";
+    } finally {
+      clearInterval(ticker);
+      overlay.hidden = true;
+      if (btn.dataset.state !== "error" || !msg.textContent.includes("retry in")) btn.disabled = false;
+      if (btn.dataset.state === "loading") delete btn.dataset.state;
+    }
+  });
+
+  function showResult(r) {
+    $("#report-form").hidden = true;
+    const card = $("#result");
+    card.hidden = false;
+    renderReportCard(r, { photo: $("#result-photo"), chips: $("#result-chips"), title: $("#result-title"), desc: $("#result-desc") });
+    if (!r.photo_url && photoFile) {
+      $("#result-photo").replaceChildren(h("img", { src: URL.createObjectURL(photoFile), alt: "Your hazard photo" }));
+    }
+    if (r.needs_review) $("#result-desc").textContent = "The AI couldn't read this photo, so a person will check it. It's on the map already.";
+    // add to local list so the map shows it right away
+    const { lat, lng, ...props } = r;
+    if (state.reports && !state.reports.features.some((f) => f.id === r.id)) {
+      state.reports.features.unshift({ type: "Feature", id: r.id, geometry: { type: "Point", coordinates: [lng, lat] }, properties: props });
+    }
+    state.focusReport = r.id;
+    card.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
+  }
+
+  $("#result-again").addEventListener("click", () => {
+    photoFile = null; picked = null;
+    if (pickMarker) { pickMarker.remove(); pickMarker = null; }
+    $("#report-form").reset();
+    $("#photo-preview").hidden = true; $(".drop__empty").hidden = false;
+    $("#photo-caption").textContent = "the hazard";
+    $("#where-coords").textContent = "No spot yet";
+    updateCount();
+    $("#result").hidden = true; $("#report-form").hidden = false;
+    $("#submit-btn").dataset.state = "";
+    replayEntrance();
+  });
+
+  /* ================================================================ ROUTES */
+  let routesMap = null, routeLayer = null, routeLines = new Map(), scenarioList = null;
+
+  viewHooks.routes = async () => {
+    if (!routesMap) {
+      routesMap = newMap("routes-map", { scrollWheelZoom: false });
+      routeLayer = L.layerGroup().addTo(routesMap);
+    }
+    setTimeout(() => routesMap.invalidateSize(), 80);
+    try {
+      if (!scenarioList) {
+        scenarioList = (await BikeAPI.scenarios()).scenarios;
+        $("#scenario-tabs").replaceChildren(...scenarioList.map((s, i) =>
+          h("button", { type: "button", role: "tab", "aria-selected": String(i === 0), "data-id": s.id, onclick: () => loadScenario(s.id) }, s.name)));
+      }
+      if (scenarioList.length) await loadScenario(($('#scenario-tabs [aria-selected="true"]') || {}).dataset?.id || scenarioList[0].id);
+    } catch (err) { toast(err.message); }
+  };
+
+  async function loadScenario(id) {
+    $$("#scenario-tabs button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.id === id)));
+    const wrap = $("#route-tickets");
+    let cmp;
+    try { cmp = await BikeAPI.compare(id); } catch (err) { wrap.replaceChildren(h("p", { class: "form-msg" }, err.message)); return; }
+    routeLayer.clearLayers(); routeLines.clear();
+    const all = L.featureGroup();
+    [...cmp.routes].reverse().forEach((r) => {
+      const best = r.id === cmp.recommended_route_id;
+      const line = L.geoJSON(r.geometry, { style: { color: condition(r.condition).hex, weight: best ? 8 : 5, opacity: best ? 0.95 : 0.6, dashArray: best ? null : "10 8", lineCap: "round" } });
+      line.addTo(routeLayer); line.addTo(all);
+      routeLines.set(r.id, line);
+    });
+    const end = (p, label) => L.circleMarker([p.lat, p.lng], { radius: 8, color: cssVar("--ink"), weight: 3, fillColor: cssVar("--paper"), fillOpacity: 1 }).bindTooltip(label, { permanent: true, direction: "top", offset: [0, -8] }).addTo(routeLayer);
+    end(cmp.scenario.from, cmp.scenario.from.name);
+    end(cmp.scenario.to, cmp.scenario.to.name);
+    if (all.getLayers().length) routesMap.fitBounds(all.getBounds().pad(0.25));
+
+    const hazardsOn = (ids) => ids.map((rid) => state.reports.features.find((f) => f.id === rid)).filter(Boolean);
+    wrap.replaceChildren(...cmp.routes.map((r, i) => {
+      const best = r.id === cmp.recommended_route_id;
+      const hz = hazardsOn(r.hazards_on_route).filter((f) => hazard(f.properties.hazard_type).is_hazard).length;
+      const el = h("button", { type: "button", class: `route-ticket${best ? " is-active" : ""}`, style: `--c:var(--c-${condition(r.condition).key});--i:${i};--r:${i % 2 ? 0.8 : -0.8}deg`, "aria-pressed": String(best) },
+        best ? h("span", { class: "stamp" }, "RECOMMENDED") : null,
+        h("span", { class: "route-ticket__name" }, r.name),
+        h("span", { class: "route-ticket__meta" }, `${(r.length_m / 1000).toFixed(2)} KM · ${condition(r.condition).label.toUpperCase()} · ${hz} HAZARD${hz === 1 ? "" : "S"}`),
+        h("ul", {}, r.explanation.map((x) => h("li", {}, x))),
+        h("span", { class: "route-ticket__score" }, h("b", {}, String(r.score)), h("small", {}, "/ 100")));
+      const focus = () => {
+        $$(".route-ticket", wrap).forEach((t) => t.classList.toggle("is-active", t === el));
+        routeLines.forEach((line, rid) => line.setStyle(rid === r.id ? { weight: 8, opacity: 0.95, dashArray: null } : { weight: 5, opacity: 0.45, dashArray: "10 8" }));
+        routeLines.get(r.id).eachLayer((l) => l.bringToFront());
+      };
+      el.addEventListener("mouseenter", focus);
+      el.addEventListener("focus", focus);
+      el.addEventListener("click", () => { focus(); routesMap.fitBounds(routeLines.get(r.id).getBounds().pad(0.3)); });
+      return el;
+    }));
+  }
+
+  /* ================================================================ BOOT */
+  function applyMeta(meta) {
+    state.meta = meta;
+    meta.conditions.forEach((c) => document.documentElement.style.setProperty(`--c-${c.key}`, c.hex));
+    state.hiddenTypes = new Set();
+  }
+
+  async function boot() {
+    const meta = await BikeAPI.meta();
+    applyMeta(meta);
+    const [reports, segments] = await Promise.all([BikeAPI.reports(), BikeAPI.segments().catch(() => null)]);
+    state.reports = reports; state.segments = segments;
+    renderHome();
+    renderTicket();
+  }
+
+  const firstVisit = !store.get("bikeable:intro");
+  store.set("bikeable:intro", "1");
+  loader.run(boot().catch((err) => { console.error(err); toast("Couldn't load the map data. Refresh to try again."); }), { full: firstVisit })
+    .then(() => {
+      route();
+      if (current === "home") tickChecklist();
+      window.addEventListener("hashchange", route);
+    });
+})();
+
+</script>
+
+</body></html>
