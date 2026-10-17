@@ -1,0 +1,180 @@
+/* BikeAble app shell. Plain CSS, no build step. Mobile-first: designed at 390 px. */
+
+/* Design tokens: PLACEHOLDER values following the style direction in
+   docs/design/README.md (deep green ground, cream paper cards, typewriter labels).
+   Real values come from the mockup (pending). Condition colors (green/amber/red/grey)
+   are deliberately NOT here: they come from GET /api/meta/ at runtime. */
+:root {
+  --color-ground: #2f5a46;
+  --color-paper: #f4efe3;
+  --color-ink: #1f2421;
+  --color-ink-muted: #5c625e;
+  --color-accent: #1f4a37;
+  --color-on-ground: #f4efe3;
+
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+
+  --fs-sm: 0.875rem;
+  --fs-md: 1rem;
+  --fs-lg: 1.25rem;
+  --fs-xl: 1.5rem;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+
+  --radius-sm: 4px;
+  --radius-md: 10px;
+
+  --shadow-card: 0 2px 0 rgb(0 0 0 / 0.15), 0 6px 16px rgb(0 0 0 / 0.18);
+
+  --tap-min: 44px;
+  --header-h: 52px;
+  --nav-h: 60px;
+
+  /* Phone notches / home indicator; 0 on devices without them. */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--fs-md);
+  line-height: 1.5;
+  color: var(--color-ink);
+  background: var(--color-ground);
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Full-height column: header, scrollable main, fixed bottom nav. */
+.shell {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  min-height: calc(var(--header-h) + var(--safe-top));
+  padding: var(--safe-top) calc(var(--space-4) + var(--safe-right)) 0
+    calc(var(--space-4) + var(--safe-left));
+  display: flex;
+  align-items: center;
+  background: var(--color-ground);
+  color: var(--color-on-ground);
+}
+
+.app-header__title {
+  font-family: var(--font-mono);
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: inherit;
+  text-decoration: none;
+  min-height: var(--tap-min);
+  display: inline-flex;
+  align-items: center;
+}
+
+.app-main {
+  flex: 1;
+  padding: var(--space-4) calc(var(--space-4) + var(--safe-right))
+    calc(var(--nav-h) + var(--safe-bottom) + var(--space-4))
+    calc(var(--space-4) + var(--safe-left));
+}
+
+/* Paper card: the basic surface of the scrapbook look. */
+.card {
+  background: var(--color-paper);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-5) var(--space-4);
+  max-width: 40rem;
+  margin: 0 auto;
+}
+
+.card__title {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xl);
+  line-height: 1.2;
+}
+
+.muted {
+  color: var(--color-ink-muted);
+}
+
+.bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  display: flex;
+  height: calc(var(--nav-h) + var(--safe-bottom));
+  padding: 0 var(--safe-right) var(--safe-bottom) var(--safe-left);
+  background: var(--color-paper);
+  border-top: 1px solid rgb(0 0 0 / 0.12);
+}
+
+.bottom-nav__item {
+  flex: 1;
+  min-height: var(--tap-min);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--color-ink-muted);
+  text-decoration: none;
+}
+
+.bottom-nav__item svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.bottom-nav__item[aria-current="page"] {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+.bottom-nav__item:focus-visible,
+.app-header__title:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: -3px;
+}
+
+/* Wider screens: same layout, just more breathing room. */
+@media (min-width: 768px) {
+  .app-main {
+    padding-top: var(--space-6);
+  }
+}

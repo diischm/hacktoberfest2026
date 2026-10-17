@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     "reports",
     "ai",
     "routes",
+    "web",
 ]
 
 MIDDLEWARE = [
