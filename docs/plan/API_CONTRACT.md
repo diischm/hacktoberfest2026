@@ -1,6 +1,6 @@
 # BikeAble API contract
 
-**contract_version: 1**
+**contract_version: 2**
 
 Single source of truth between frontend and backend. If code and this file disagree, this
 file wins and the code is a bug. Change it only via the process in
@@ -128,6 +128,7 @@ Used by E4, E5, E6 (flat object) and as GeoJSON `properties` in E3 (same fields 
 | E7 | GET | `/api/segments/` | `web/static/web/mock/segments.json` |
 | E8 | GET | `/api/routes/scenarios/` | `web/static/web/mock/scenarios.json` |
 | E9 | GET | `/api/routes/compare/` | `web/static/web/mock/routes-compare.json` |
+| E10 | GET | `/api/bike-parking/` | `web/static/web/mock/bike-parking.json` |
 
 ### E1 Health
 
@@ -145,7 +146,7 @@ Used by E4, E5, E6 (flat object) and as GeoJSON `properties` in E3 (same fields 
 
 ```json
 {
-  "contract_version": 1,
+  "contract_version": 2,
   "hazard_types": [
     {"key": "road_block", "label": "Road blocked", "icon": "barrier", "is_hazard": true},
     {"key": "car_on_sidewalk", "label": "Car on sidewalk", "icon": "car", "is_hazard": true},
@@ -176,6 +177,13 @@ Used by E4, E5, E6 (flat object) and as GeoJSON `properties` in E3 (same fields 
     {"key": "resolved", "label": "It's gone"},
     {"key": "dispute", "label": "Not accurate"}
   ],
+  "segment_kinds": [
+    {"key": "bike_lane", "label": "Bike lane or cycleway", "hex": "#1565C0", "line_style": "solid"},
+    {"key": "shared_path", "label": "Shared path", "hex": "#00838F", "line_style": "dashed"},
+    {"key": "road", "label": "On-street (no lane)", "hex": "#6D4C41", "line_style": "dotted"},
+    {"key": "informal_path", "label": "Informal path", "hex": "#8D6E63", "line_style": "dashed"}
+  ],
+  "bike_parking": {"label": "Bicycle parking", "hex": "#0D47A1"},
   "upload": {
     "max_photo_bytes": 10485760,
     "accepted_types": ["image/jpeg", "image/png", "image/webp"],
@@ -192,6 +200,9 @@ Used by E4, E5, E6 (flat object) and as GeoJSON `properties` in E3 (same fields 
 - `icon` is a **hint** (a name, not a file); frontend maps it to its own icon set and falls back to a generic marker.
 - `map.center`/`zoom` are placeholders (Macedonia Square) until the demo area is confirmed.
 - `map.bounds`: uploads outside it are rejected (E5).
+- `segment_kinds`: line `hex` and `line_style` (`solid` | `dashed` | `dotted`) per `kind` for E7
+  segments. The frontend must read them here, never hardcode them.
+- `bike_parking`: `label` and `hex` for the E10 parking spots.
 
 Errors: none expected.
 
@@ -369,20 +380,26 @@ Errors: 400 `validation_error` (unknown action), 403 `csrf_failed`, 404 `not_fou
 
 GeoJSON `FeatureCollection` of `LineString`s (bike-lane/road segments in the demo area).
 
+These are the **real, existing** lanes and paths from OpenStreetMap (downloaded with
+`manage.py fetch_bike_data`, committed as `reports/data/skopje_bike.geojson`), so
+`is_synthetic` is `false`. `condition`/`score` are computed live from the current reports, exactly
+like report conditions. `osm_timestamp` (non-standard top-level member) is the OSM snapshot time.
+
 | property | type | notes |
 |---|---|---|
-| `id` | int | |
+| `id` | int | OpenStreetMap way id |
 | `name` | string | e.g. street name, may be `""` |
-| `kind` | enum | `bike_lane` \| `road` \| `shared_path` \| `informal_path` |
+| `kind` | enum | `bike_lane` \| `road` \| `shared_path` \| `informal_path` (colors in E2 `segment_kinds`) |
 | `condition` | enum | `green` \| `amber` \| `red` \| `grey`, computed by backend |
 | `score` | int | 0–100, higher = more comfortable |
 | `length_m` | int | meters |
 | `hazard_report_ids` | int[] | active reports affecting this segment |
-| `is_synthetic` | bool | hand-drawn demo geometry |
+| `is_synthetic` | bool | `false` — real OpenStreetMap geometry |
 
 ```json
 {
   "type": "FeatureCollection",
+  "osm_timestamp": "2026-10-17T14:11:06Z",
   "features": [
     {
       "type": "Feature",
@@ -399,7 +416,48 @@ GeoJSON `FeatureCollection` of `LineString`s (bike-lane/road segments in the dem
         "score": 42,
         "length_m": 460,
         "hazard_report_ids": [101],
-        "is_synthetic": true
+        "is_synthetic": false
+      }
+    }
+  ]
+}
+```
+
+Errors: 400 `invalid_bbox`.
+
+### E10 Bike parking
+
+`GET /api/bike-parking/?bbox=minLng,minLat,maxLng,maxLat` — `bbox` optional, same rules as E3.
+
+GeoJSON `FeatureCollection` of `Point`s: the bicycle parking that already exists in Skopje
+(OpenStreetMap). `osm_timestamp` is the OSM snapshot time. Labels and colors come from E2
+`bike_parking`.
+
+| property | type | notes |
+|---|---|---|
+| `id` | int | OpenStreetMap node/way id |
+| `name` | string | often `""` |
+| `capacity` | int \| null | number of spaces/stands, when tagged |
+| `covered` | bool \| null | `null` when not tagged |
+| `parking` | string | OSM `parking` value (e.g. `street`, `stands`), `""` if none |
+| `access` | string | OSM `access` value, `""` if none |
+
+```json
+{
+  "type": "FeatureCollection",
+  "osm_timestamp": "2026-10-17T14:11:06Z",
+  "features": [
+    {
+      "type": "Feature",
+      "id": 3508366301,
+      "geometry": {"type": "Point", "coordinates": [21.392381, 42.003979]},
+      "properties": {
+        "id": 3508366301,
+        "name": "",
+        "capacity": null,
+        "covered": false,
+        "parking": "",
+        "access": ""
       }
     }
   ]
@@ -502,3 +560,4 @@ Errors: 400 `validation_error` (missing `scenario`), 404 `not_found` (unknown sc
 | Version | Date | Change | Author |
 |---|---|---|---|
 | 1 | 2026-10-17 | Initial contract | Dimi |
+| 2 | 2026-10-17 | Existing bike lanes (E7) and bicycle parking (E10) from OpenStreetMap; E2 gains `segment_kinds` and `bike_parking` | Dimi |

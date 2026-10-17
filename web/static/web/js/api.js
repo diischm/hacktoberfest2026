@@ -96,6 +96,13 @@ export function getSegments({ bbox } = {}) {
   return request("segments", { path: "/segments/", query, mockFile: "segments.json" });
 }
 
+// E10: GeoJSON FeatureCollection of bicycle-parking Points.
+export function getBikeParking({ bbox } = {}) {
+  const query = {};
+  if (bbox != null) query.bbox = Array.isArray(bbox) ? bbox.join(",") : bbox;
+  return request("bikeParking", { path: "/bike-parking/", query, mockFile: "bike-parking.json" });
+}
+
 // E8: demo origin/destination pairs.
 export function getScenarios() {
   return request("scenarios", { path: "/routes/scenarios/", mockFile: "scenarios.json" });

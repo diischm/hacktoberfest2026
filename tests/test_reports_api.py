@@ -18,7 +18,7 @@ from reports.models import Report, ReportFeedback
 pytestmark = pytest.mark.django_db
 
 CONTRACT_META = {
-    "contract_version": 1,
+    "contract_version": 2,
     "hazard_types": [
         {"key": "road_block", "label": "Road blocked", "icon": "barrier", "is_hazard": True},
         {"key": "car_on_sidewalk", "label": "Car on sidewalk", "icon": "car", "is_hazard": True},
@@ -74,6 +74,23 @@ CONTRACT_META = {
         {"key": "resolved", "label": "It's gone"},
         {"key": "dispute", "label": "Not accurate"},
     ],
+    "segment_kinds": [
+        {
+            "key": "bike_lane",
+            "label": "Bike lane or cycleway",
+            "hex": "#1565C0",
+            "line_style": "solid",
+        },
+        {"key": "shared_path", "label": "Shared path", "hex": "#00838F", "line_style": "dashed"},
+        {"key": "road", "label": "On-street (no lane)", "hex": "#6D4C41", "line_style": "dotted"},
+        {
+            "key": "informal_path",
+            "label": "Informal path",
+            "hex": "#8D6E63",
+            "line_style": "dashed",
+        },
+    ],
+    "bike_parking": {"label": "Bicycle parking", "hex": "#0D47A1"},
     "upload": {
         "max_photo_bytes": 10485760,
         "accepted_types": ["image/jpeg", "image/png", "image/webp"],
