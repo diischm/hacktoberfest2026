@@ -1,0 +1,222 @@
+[
+  {
+    "model": "reports.report",
+    "pk": 9001,
+    "fields": {
+      "lat": 41.99621,
+      "lng": 21.43162,
+      "hazard_type": "car_in_bike_lane",
+      "description": "[SYNTHETIC] A silver car is parked across the painted bike lane.",
+      "note": "Every morning around 8",
+      "photo": "",
+      "ai_confidence": 0.91,
+      "needs_review": false,
+      "verification_status": "community_confirmed",
+      "is_synthetic": true,
+      "ai_raw_response": null,
+      "created_at": "2026-10-17T08:05:00+02:00",
+      "last_confirmed_at": "2026-10-17T09:40:00+02:00",
+      "resolved_at": null
+    }
+  },
+  {
+    "model": "reports.report",
+    "pk": 9002,
+    "fields": {
+      "lat": 41.99782,
+      "lng": 21.42513,
+      "hazard_type": "informal_shortcut",
+      "description": "[SYNTHETIC] A worn dirt path cuts diagonally through the grass.",
+      "note": "",
+      "photo": "",
+      "ai_confidence": 0.78,
+      "needs_review": false,
+      "verification_status": "unverified",
+      "is_synthetic": true,
+      "ai_raw_response": null,
+      "created_at": "2026-10-16T17:30:00+02:00",
+      "last_confirmed_at": null,
+      "resolved_at": null
+    }
+  },
+  {
+    "model": "reports.report",
+    "pk": 9003,
+    "fields": {
+      "lat": 41.99513,
+      "lng": 21.43024,
+      "hazard_type": "car_on_crosswalk",
+      "description": "[SYNTHETIC] A black SUV is stopped on the zebra crossing.",
+      "note": "",
+      "photo": "",
+      "ai_confidence": 0.87,
+      "needs_review": false,
+      "verification_status": "unverified",
+      "is_synthetic": true,
+      "ai_raw_response": null,
+      "created_at": "2026-10-17T07:50:00+02:00",
+      "last_confirmed_at": null,
+      "resolved_at": null
+    }
+  },
+  {
+    "model": "reports.report",
+    "pk": 9004,
+    "fields": {
+      "lat": 41.99487,
+      "lng": 21.43395,
+      "hazard_type": "pothole_damage",
+      "description": "[SYNTHETIC] A deep pothole in the right side of the lane, about half a metre wide.",
+      "note": "Hard to see at night",
+      "photo": "",
+      "ai_confidence": 0.93,
+      "needs_review": false,
+      "verification_status": "verified",
+      "is_synthetic": true,
+      "ai_raw_response": null,
+      "created_at": "2026-09-26T10:15:00+02:00",
+      "last_confirmed_at": "2026-10-10T18:00:00+02:00",
+      "resolved_at": null
+    }
+  },
+  {
+    "model": "reports.report",
+    "pk": 9005,
+    "fields": {
+      "lat": 41.99734,
+      "lng": 21.43478,
+      "hazard_type": "construction_debris",
+      "description": "[SYNTHETIC] Sand and broken bricks spill from a building site onto the bike path.",
+      "note": "",
+      "photo": "",
+      "ai_confidence": 0.84,
+      "needs_review": false,
+      "verification_status": "unverified",
+      "is_synthetic": true,
+      "ai_raw_response": null,
+      "created_at": "2026-10-12T14:20:00+02:00",
+      "last_confirmed_at": null,
+      "resolved_at": null
+    }
+  },
+  {
+    "model": "reports.report",
+    "pk": 9006,
+    "fields": {
+      "lat": 41.99812,
+      "lng": 21.42956,
+      "hazard_type": "road_block",
+      "description": "[SYNTHETIC] Metal barriers fully block the bike lane.",
+      "note": "Barriers from the weekend event",
+      "photo": "",
+      "ai_confidence": 0.88,
+      "needs_review": false,
+      "verification_status": "resolved",
+      "is_synthetic": true,
+      "ai_raw_response": null,
+      "created_at": "2026-10-03T09:00:00+02:00",
+      "last_confirmed_at": null,
+      "resolved_at": "2026-10-06T16:45:00+02:00"
+    }
+  },
+  {
+    "model": "reports.report",
+    "pk": 9007,
+    "fields": {
+      "lat": 41.99562,
+      "lng": 21.42871,
+      "hazard_type": "car_on_sidewalk",
+      "description": "[SYNTHETIC] Two cars are parked on the sidewalk, leaving no room to pass.",
+      "note": "",
+      "photo": "",
+      "ai_confidence": 0.82,
+      "needs_review": false,
+      "verification_status": "disputed",
+      "is_synthetic": true,
+      "ai_raw_response": null,
+      "created_at": "2026-10-15T12:10:00+02:00",
+      "last_confirmed_at": null,
+      "resolved_at": null
+    }
+  },
+  {
+    "model": "reports.report",
+    "pk": 9008,
+    "fields": {
+      "lat": 41.99684,
+      "lng": 21.43612,
+      "hazard_type": "other",
+      "description": "[SYNTHETIC]",
+      "note": "Something sharp on the road?",
+      "photo": "",
+      "ai_confidence": null,
+      "needs_review": true,
+      "verification_status": "ai_flagged",
+      "is_synthetic": true,
+      "ai_raw_response": null,
+      "created_at": "2026-10-17T06:30:00+02:00",
+      "last_confirmed_at": null,
+      "resolved_at": null
+    }
+  },
+  {
+    "model": "reports.report",
+    "pk": 9009,
+    "fields": {
+      "lat": 41.99435,
+      "lng": 21.43088,
+      "hazard_type": "none",
+      "description": "[SYNTHETIC] A clear, empty bike lane with fresh paint.",
+      "note": "",
+      "photo": "",
+      "ai_confidence": 0.95,
+      "needs_review": false,
+      "verification_status": "unverified",
+      "is_synthetic": true,
+      "ai_raw_response": null,
+      "created_at": "2026-10-14T11:00:00+02:00",
+      "last_confirmed_at": null,
+      "resolved_at": null
+    }
+  },
+  {
+    "model": "reports.report",
+    "pk": 9010,
+    "fields": {
+      "lat": 41.99398,
+      "lng": 21.43266,
+      "hazard_type": "car_in_bike_lane",
+      "description": "[SYNTHETIC] A delivery van appears to be stopped near the bike lane.",
+      "note": "",
+      "photo": "",
+      "ai_confidence": 0.41,
+      "needs_review": true,
+      "verification_status": "ai_flagged",
+      "is_synthetic": true,
+      "ai_raw_response": null,
+      "created_at": "2026-10-17T10:05:00+02:00",
+      "last_confirmed_at": null,
+      "resolved_at": null
+    }
+  },
+  {
+    "model": "reports.report",
+    "pk": 9011,
+    "fields": {
+      "lat": 41.99865,
+      "lng": 21.42734,
+      "hazard_type": "pothole_damage",
+      "description": "[SYNTHETIC] Cracked asphalt with several small holes along the curb.",
+      "note": "",
+      "photo": "",
+      "ai_confidence": 0.76,
+      "needs_review": false,
+      "verification_status": "community_confirmed",
+      "is_synthetic": true,
+      "ai_raw_response": null,
+      "created_at": "2026-08-30T08:40:00+02:00",
+      "last_confirmed_at": "2026-09-20T07:55:00+02:00",
+      "resolved_at": null
+    }
+  }
+]

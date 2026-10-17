@@ -11,6 +11,7 @@ make install                 # creates .venv, installs dev deps, installs pre-co
 source .venv/bin/activate
 cp .env.example .env         # optional: the app runs without it (AI_MODE=mock)
 make migrate
+make loaddemo                # optional: synthetic demo reports for the map/admin
 make superuser               # optional: login for http://localhost:8000/admin/
 make run                     # http://localhost:8000  and  http://localhost:8000/api/health/
 ```
@@ -22,6 +23,10 @@ make run                     # http://localhost:8000  and  http://localhost:8000
 - **Open it on your phone:** find your laptop's LAN IP (`hostname -I`), add it to
   `DJANGO_ALLOWED_HOSTS` in `.env`, run `make run`, open `http://<ip>:8000` on a phone on the
   same Wi-Fi.
+- **Demo reports:** `make loaddemo` loads `reports/fixtures/demo_reports.json`: 11 synthetic
+  reports around Macedonia Square (`is_synthetic=true`, descriptions start with `[SYNTHETIC]`,
+  ids 9001+ so they never overwrite real reports). They have **no photos** yet; demo photos
+  come with `feat/demo-data`. Review and verify reports in the admin at `/admin/`.
 - **Before pushing:** `make check` runs the same checks as CI (plus Django checks and a
   missing-migrations check). `make help` lists all commands.
 
