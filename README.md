@@ -59,7 +59,7 @@ synthetic.
    make migrate
    ```
 
-6. Add the demo reports:
+6. Add the demo reports (including the sample hazards on the demo routes at /routes/):
 
    ```bash
    make loaddemo

@@ -19,8 +19,8 @@ run: ## Start dev server reachable from phones on the same Wi-Fi
 migrate: ## Apply database migrations
 	$(PYTHON) manage.py migrate
 
-loaddemo: ## Load synthetic demo reports (ids 9001+, no photos); safe to re-run
-	$(PYTHON) manage.py loaddata demo_reports
+loaddemo: ## Load synthetic demo reports (ids 9001+, no photos) and route hazards; safe to re-run
+	$(PYTHON) manage.py loaddata demo_reports demo_route_hazards
 
 superuser: ## Create an admin login for /admin/
 	$(PYTHON) manage.py createsuperuser

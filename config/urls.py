@@ -9,6 +9,7 @@ urlpatterns = [
     path("", include("web.urls")),
     path("api/health/", views.health, name="health"),
     path("api/", include("reports.urls")),
+    path("api/routes/", include("routes.urls")),
     path("admin/", admin.site.urls),
     # Must stay LAST among the api/ routes: Django tries routes top to bottom and stops at the
     # first match, so anything listed after this would never be reached. Only paths ending in "/"

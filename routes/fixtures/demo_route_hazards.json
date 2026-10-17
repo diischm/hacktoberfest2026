@@ -1,0 +1,62 @@
+[
+ {
+  "model": "reports.report",
+  "pk": 9101,
+  "fields": {
+   "lat": 42.000585,
+   "lng": 21.426952,
+   "hazard_type": "car_in_bike_lane",
+   "description": "[SYNTHETIC] A delivery van is parked in the bike lane.",
+   "note": "",
+   "photo": "",
+   "ai_confidence": 0.93,
+   "needs_review": false,
+   "verification_status": "community_confirmed",
+   "is_synthetic": true,
+   "ai_raw_response": null,
+   "created_at": "2026-10-17T07:20:00+02:00",
+   "last_confirmed_at": "2026-10-17T09:10:00+02:00",
+   "resolved_at": null
+  }
+ },
+ {
+  "model": "reports.report",
+  "pk": 9102,
+  "fields": {
+   "lat": 41.99806,
+   "lng": 21.42886,
+   "hazard_type": "construction_debris",
+   "description": "[SYNTHETIC] Sand and bricks from a building site cover the lane.",
+   "note": "",
+   "photo": "",
+   "ai_confidence": 0.88,
+   "needs_review": false,
+   "verification_status": "unverified",
+   "is_synthetic": true,
+   "ai_raw_response": null,
+   "created_at": "2026-10-16T16:45:00+02:00",
+   "last_confirmed_at": null,
+   "resolved_at": null
+  }
+ },
+ {
+  "model": "reports.report",
+  "pk": 9103,
+  "fields": {
+   "lat": 41.99895,
+   "lng": 21.4298,
+   "hazard_type": "pothole_damage",
+   "description": "[SYNTHETIC] A deep pothole near the bridge approach.",
+   "note": "",
+   "photo": "",
+   "ai_confidence": 0.9,
+   "needs_review": false,
+   "verification_status": "verified",
+   "is_synthetic": true,
+   "ai_raw_response": null,
+   "created_at": "2026-10-15T11:30:00+02:00",
+   "last_confirmed_at": "2026-10-17T08:00:00+02:00",
+   "resolved_at": null
+  }
+ }
+]
