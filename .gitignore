@@ -17,11 +17,14 @@ dist/
 
 # Django
 *.sqlite3
+*.sqlite3-*
 # Local database files (incl. -wal/-journal); keep the empty folder itself
 server/data/*
 !server/data/.gitkeep
 # output of collectstatic, generated rather than written by hand
 staticfiles/
+# user-uploaded photos (MEDIA_ROOT)
+media/
 
 # Tool caches and test output
 .pytest_cache/
