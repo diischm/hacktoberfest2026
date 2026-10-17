@@ -86,7 +86,7 @@ def test_bike_parking_mock_matches_contract_keys():
     assert data["features"][0]["properties"].keys() == example["features"][0]["properties"].keys()
 
 
-@pytest.mark.parametrize("name", ["web:home", "web:report"])
+@pytest.mark.parametrize("name", ["web:map", "web:report"])
 def test_posting_pages_set_csrf_cookie(client, name):
     assert "csrftoken" in client.get(reverse(name)).cookies
 

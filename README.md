@@ -71,7 +71,7 @@ synthetic.
    make run
    ```
 
-8. Open <http://localhost:8000> in your browser.
+8. Open <http://localhost:8000> in your browser. The start page links to the map (`/map/`), the report form (`/report/`) and route comparison (`/routes/`).
 
 ## The map
 

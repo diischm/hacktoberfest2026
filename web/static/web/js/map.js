@@ -1,4 +1,4 @@
-// Map page ("/"): reports from E3 as pins, report detail sheet from E4, existing bike lanes
+// Map page ("/map/"): reports from E3 as pins, report detail sheet from E4, existing bike lanes
 // from E7 and bicycle parking from E10 drawn as overlays.
 // Labels and condition colors come only from GET /api/meta/ (E2), never from this file.
 // API data is always inserted with textContent / text nodes, never as HTML.
@@ -718,7 +718,7 @@ document.addEventListener("keydown", (e) => {
 
 // --- Start ------------------------------------------------------------------------------
 
-// /?report=<id>: the upload page's "See it on the map" link opens that report's sheet.
+// /map/?report=<id>: the upload page's "See it on the map" link opens that report's sheet.
 function reportIdFromUrl() {
   const id = new URLSearchParams(location.search).get("report");
   return id && /^\d+$/.test(id) ? Number(id) : null;

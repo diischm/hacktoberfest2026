@@ -1,16 +1,24 @@
 from django.conf import settings
 from django.http import Http404
-from django.shortcuts import render
+from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.views.decorators.csrf import ensure_csrf_cookie
 
 from reports.limits import MAX_NOTE_LENGTH
 
 
-# ensure_csrf_cookie: pages that POST from JS need the csrftoken cookie that api.js reads.
-# home: feedback buttons on the map (E6). report: photo upload (E5).
-@ensure_csrf_cookie
 def home(request):
-    return render(request, "web/home.html")
+    # Landing page. Old links to one report (/?report=<id>) now live on the map page.
+    if "report" in request.GET:
+        return redirect(f"{reverse('web:map')}?{request.GET.urlencode()}")
+    return render(request, "web/landing.html")
+
+
+# ensure_csrf_cookie: pages that POST from JS need the csrftoken cookie that api.js reads.
+# map: feedback buttons on the map (E6). report: photo upload (E5).
+@ensure_csrf_cookie
+def map_page(request):
+    return render(request, "web/map.html")
 
 
 @ensure_csrf_cookie
