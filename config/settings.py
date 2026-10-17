@@ -128,6 +128,9 @@ REST_FRAMEWORK = {
     ],
     # Every API error -> {"error": {"code", "message", "fields"}} (see API_CONTRACT.md).
     "EXCEPTION_HANDLER": "config.exceptions.api_exception_handler",
+    # Throttling = "at most N requests per time window per client", counted in Django's cache.
+    # report_upload: POST /api/reports/ per IP, so one phone can't burn the free Gemini quota.
+    "DEFAULT_THROTTLE_RATES": {"report_upload": "6/min"},
 }
 
 # --- AI (Google Gemini via a free-tier Google AI Studio key) ----------------------------
@@ -139,3 +142,6 @@ AI_MODE = resolve_ai_mode(os.getenv("AI_MODE", "mock"), GEMINI_API_KEY, GEMINI_M
 # Mock mode only: "rate_limited" or "unavailable" makes every analysis fail that way, to try
 # the error screens without a key. Empty = normal mock answers.
 AI_MOCK_FORCE = os.getenv("AI_MOCK_FORCE", "").strip().lower()
+# Live mode only: minimal | low | medium | high. Lower = faster answers. Only Gemini 3 models
+# support it (others answer 400), so empty = don't send it, use the model's default.
+GEMINI_THINKING_LEVEL = os.getenv("GEMINI_THINKING_LEVEL", "").strip().lower()

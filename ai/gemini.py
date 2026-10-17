@@ -29,8 +29,24 @@ logger = logging.getLogger(__name__)
 TIMEOUT_SECONDS = 15  # per request; the contract allows ~15 s for the whole upload
 MAX_ATTEMPTS = 2  # the first call + one retry, only on a 5xx (server) error
 RETRY_DELAY_SECONDS = 1.0
-# Don't retry if the first attempt already used this much time (keeps the upload short).
-RETRY_ONLY_IF_FAILED_WITHIN_SECONDS = 5.0
+# Hard cap for one analyze() call, retry included. The frontend gives up after 30 s, so this
+# leaves room for the upload itself and saving the report. A retry only starts if a full attempt
+# (delay + TIMEOUT_SECONDS) still fits before the deadline; otherwise we give up right away.
+DEADLINE_SECONDS = 20
+
+# "Thinking" = the model reasons before answering: better on hard tasks, but slower. Gemini 3
+# models accept a thinking_level; older ones (2.5) reject it with a 400. So it's opt-in via
+# settings.GEMINI_THINKING_LEVEL, and empty means "send nothing, use the model's default".
+THINKING_LEVELS = {
+    "minimal": types.ThinkingLevel.MINIMAL,
+    "low": types.ThinkingLevel.LOW,
+    "medium": types.ThinkingLevel.MEDIUM,
+    "high": types.ThinkingLevel.HIGH,
+}
+
+# Tests replace these with a fake clock, so the deadline can be tested without real waiting.
+_clock = time.monotonic
+_sleep = time.sleep
 
 
 def _make_client(api_key: str) -> genai.Client:
@@ -42,10 +58,14 @@ def _make_client(api_key: str) -> genai.Client:
     )
 
 
-def analyze(jpeg_bytes: bytes, *, api_key: str, model: str) -> AnalysisResult:
+def analyze(
+    jpeg_bytes: bytes, *, api_key: str, model: str, thinking_level: str = ""
+) -> AnalysisResult:
     """Analyze an already-prepared JPEG (see ai.image.prepare_image)."""
+    deadline = _clock() + DEADLINE_SECONDS
     client = _make_client(api_key)
-    response = _generate_with_retry(client, model, jpeg_bytes)
+    config = _generate_config(thinking_level)
+    response = _generate_with_retry(client, model, jpeg_bytes, config, deadline)
     raw = _raw_dict(response, model)
     try:
         result = parse_model_output(_response_text(response))
@@ -57,16 +77,26 @@ def analyze(jpeg_bytes: bytes, *, api_key: str, model: str) -> AnalysisResult:
     return result
 
 
-def _generate_with_retry(client, model: str, jpeg_bytes: bytes):
-    config = types.GenerateContentConfig(
+def _generate_config(thinking_level: str) -> types.GenerateContentConfig:
+    level = THINKING_LEVELS.get(thinking_level)
+    if thinking_level and level is None:
+        logger.warning(
+            "GEMINI_THINKING_LEVEL=%r is not one of %s; ignoring it.",
+            thinking_level,
+            ", ".join(THINKING_LEVELS),
+        )
+    return types.GenerateContentConfig(
         system_instruction=SYSTEM_PROMPT,
         response_mime_type="application/json",
         response_json_schema=GEMINI_RESPONSE_SCHEMA,
+        thinking_config=types.ThinkingConfig(thinking_level=level) if level else None,
     )
+
+
+def _generate_with_retry(client, model: str, jpeg_bytes: bytes, config, deadline: float):
     contents = [types.Part.from_bytes(data=jpeg_bytes, mime_type="image/jpeg"), USER_PROMPT]
 
     for attempt in range(1, MAX_ATTEMPTS + 1):
-        started = time.monotonic()
         try:
             return client.models.generate_content(model=model, contents=contents, config=config)
         except genai_errors.APIError as exc:
@@ -77,10 +107,11 @@ def _generate_with_retry(client, model: str, jpeg_bytes: bytes):
             error = AiUnavailable(f"request_failed: {type(exc).__name__}")
 
         retryable = isinstance(error, AiUnavailable) and error.reason.startswith("server_error")
-        quick = time.monotonic() - started < RETRY_ONLY_IF_FAILED_WITHIN_SECONDS
-        if retryable and quick and attempt < MAX_ATTEMPTS:
+        time_left = deadline - _clock()
+        retry_fits = time_left >= RETRY_DELAY_SECONDS + TIMEOUT_SECONDS
+        if retryable and retry_fits and attempt < MAX_ATTEMPTS:
             logger.info("Gemini %s, retrying once.", error.reason)
-            time.sleep(RETRY_DELAY_SECONDS)
+            _sleep(RETRY_DELAY_SECONDS)
             continue
         logger.warning("Gemini call failed: %s", error)
         raise error from None

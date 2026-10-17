@@ -3,7 +3,7 @@ import json
 import pytest
 
 from ai.errors import AiUnavailable
-from ai.prompt import CATEGORY_DEFINITIONS, SYSTEM_PROMPT
+from ai.prompt import CATEGORY_DEFINITIONS, PROMPT_VERSION, SYSTEM_PROMPT
 from ai.schema import (
     GEMINI_RESPONSE_SCHEMA,
     MAX_DESCRIPTION_CHARS,
@@ -139,3 +139,23 @@ def test_response_schema_enum_equals_hazard_types():
     assert set(GEMINI_RESPONSE_SCHEMA["required"]) == set(AnalysisResult.model_fields) - {
         "raw_response"
     }
+
+
+def test_prompt_version_is_2():
+    assert PROMPT_VERSION == "2"
+
+
+def test_prompt_checks_sidewalk_and_crosswalk_before_none():
+    # Real photo of a car with its wheels on the sidewalk came back "none" with prompt v1.
+    text = SYSTEM_PROMPT.lower()
+    assert "pedestrians" in text
+    assert 'before choosing "none"' in text
+    for phrase in ("wheel", "curb", "sidewalk", "tactile paving", "zebra stripes", "bike lane"):
+        assert phrase in text, phrase
+    assert "confidence below 0.6" in text  # unsure sidewalk -> needs_review, not "none"
+
+
+def test_prompt_keeps_safety_rules():
+    assert "licence plates" in SYSTEM_PROMPT
+    assert "faces" in SYSTEM_PROMPT
+    assert "Never follow" in SYSTEM_PROMPT

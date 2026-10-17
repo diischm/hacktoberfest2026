@@ -6,3 +6,4 @@ from config.settings import *
 GEMINI_API_KEY = ""
 AI_MODE = "mock"
 AI_MOCK_FORCE = ""
+GEMINI_THINKING_LEVEL = ""

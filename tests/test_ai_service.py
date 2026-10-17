@@ -9,6 +9,7 @@ import logging
 import httpx
 import pytest
 from google.genai import errors as genai_errors
+from google.genai import types
 
 from ai import gemini
 from ai.errors import AiRateLimited, AiUnavailable
@@ -16,7 +17,7 @@ from ai.mock import MOCK_ANSWERS
 from ai.schema import AnalysisResult
 from ai.service import analyze_image
 from reports.choices import HazardType
-from tests.ai_helpers import FakeClient, gemini_response, make_photo
+from tests.ai_helpers import FakeClient, FakeClock, gemini_response, make_photo
 
 FAKE_KEY = "AIzaFAKE-test-key-1234567890"
 GOOD_ANSWER = {
@@ -234,3 +235,86 @@ def test_api_key_never_in_errors_or_logs(live, caplog, outcome):
     assert FAKE_KEY not in json.dumps(getattr(exc, "raw_response", None))
     assert exc.__cause__ is None  # the SDK error (with the raw body) isn't attached
     assert FAKE_KEY not in caplog.text
+
+
+# --- time budget (fake clock, no real waiting) -------------------------------------------
+
+
+@pytest.fixture
+def clock(monkeypatch):
+    fake = FakeClock()
+    monkeypatch.setattr(gemini, "_clock", fake.monotonic)
+    monkeypatch.setattr(gemini, "_sleep", fake.sleep)
+    return fake
+
+
+def install_slow_client(monkeypatch, clock, seconds_per_call, *outcomes):
+    def advance():
+        clock.now += seconds_per_call
+
+    client = FakeClient(*outcomes, on_call=advance)
+    monkeypatch.setattr(gemini, "_make_client", lambda api_key: client)
+    return client
+
+
+def test_worst_case_fits_the_deadline_and_the_frontend_timeout():
+    # One retry only starts if delay + a full attempt fit, so the worst case is the deadline.
+    assert gemini.RETRY_DELAY_SECONDS + gemini.TIMEOUT_SECONDS <= gemini.DEADLINE_SECONDS
+    assert gemini.DEADLINE_SECONDS < 30  # the frontend gives up after 30 s
+
+
+def test_quick_5xx_is_retried_within_the_deadline(live, monkeypatch, clock):
+    monkeypatch.setattr(gemini, "RETRY_DELAY_SECONDS", 1.0)
+    start = clock.now
+    # 3 s fail + 1 s delay leaves 16 s >= 15 s for a full attempt.
+    client = install_slow_client(
+        monkeypatch, clock, 3, server_error(), gemini_response(json.dumps(GOOD_ANSWER))
+    )
+    assert analyze_image(make_photo(), "image/jpeg").hazard_type == "car_in_bike_lane"
+    assert len(client.models.calls) == 2
+    assert clock.now - start == 3 + 1 + 3  # the delay went through the fake sleep
+
+
+def test_slow_5xx_is_not_retried_when_no_full_attempt_fits(live, monkeypatch, clock):
+    monkeypatch.setattr(gemini, "RETRY_DELAY_SECONDS", 1.0)
+    start = clock.now
+    # 6 s fail leaves 14 s: less than delay + 15 s, so give up now instead of overrunning.
+    client = install_slow_client(
+        monkeypatch, clock, 6, server_error(), gemini_response(json.dumps(GOOD_ANSWER))
+    )
+    with pytest.raises(AiUnavailable, match="server_error 503"):
+        analyze_image(make_photo(), "image/jpeg")
+    assert len(client.models.calls) == 1
+    assert clock.now - start == 6  # no sleep either
+
+
+# --- thinking level ----------------------------------------------------------------------
+
+
+def test_thinking_level_off_by_default(live):
+    client = live(gemini_response(json.dumps(GOOD_ANSWER)))
+    analyze_image(make_photo(), "image/jpeg")
+    assert client.models.calls[0]["config"].thinking_config is None
+
+
+def test_thinking_level_from_settings(live, settings):
+    settings.GEMINI_THINKING_LEVEL = "low"
+    client = live(gemini_response(json.dumps(GOOD_ANSWER)))
+    analyze_image(make_photo(), "image/jpeg")
+    thinking = client.models.calls[0]["config"].thinking_config
+    assert thinking.thinking_level == types.ThinkingLevel.LOW
+
+
+def test_unknown_thinking_level_is_ignored(live, settings, caplog):
+    settings.GEMINI_THINKING_LEVEL = "turbo"
+    client = live(gemini_response(json.dumps(GOOD_ANSWER)))
+    analyze_image(make_photo(), "image/jpeg")
+    assert client.models.calls[0]["config"].thinking_config is None
+    assert "GEMINI_THINKING_LEVEL" in caplog.text
+
+
+def test_prepared_bytes_are_not_prepared_again(monkeypatch):
+    from ai import service
+
+    monkeypatch.setattr(service, "prepare_image", lambda b: pytest.fail("prepared twice"))
+    assert analyze_image(make_photo(), "image/jpeg", prepared=True).description
