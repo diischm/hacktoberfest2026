@@ -1,10 +1,105 @@
 {% extends "web/base.html" %}
+{% load static %}
 
 {% block title %}Report a hazard · BikeAble{% endblock %}
 
+{% block head %}
+{% include "web/partials/leaflet_css.html" %}
+{% endblock %}
+
 {% block content %}
-<section class="card">
-  <h1 class="card__title">Report a hazard</h1>
-  <p class="muted">Photo upload is coming soon.</p>
-</section>
+<div class="report-page">
+  <form class="fieldnote" id="report-form" novalidate>
+    <header class="fieldnote__head piece kraft torn" style="--r:-1.5deg">
+      <span class="tape tape--tl" aria-hidden="true"></span>
+      <h1 class="hand">Spotted something?</h1>
+      <p>Three steps. The photo does most of the work: the AI names the hazard, you just say where.</p>
+    </header>
+
+    <div class="fieldnote__photo polaroid" style="--r:2deg">
+      <span class="step" aria-hidden="true">1</span>
+      <label class="drop" for="photo" id="drop">
+        {# capture="environment": on phones this opens the back camera directly. #}
+        <input type="file" id="photo" name="photo" accept="image/*" capture="environment"
+               aria-describedby="photo-hint err-photo">
+        <span class="drop__empty" id="drop-empty">
+          <svg viewBox="0 0 64 64" aria-hidden="true"><rect x="8" y="18" width="48" height="34" rx="4"/><circle cx="32" cy="35" r="10"/><path d="M22 18 L26 11 L38 11 L42 18"/></svg>
+          <strong>Take or choose a photo</strong>
+          <small id="photo-hint">JPEG, PNG or WebP · up to 10 MB</small>
+        </span>
+        <img class="drop__preview" id="photo-preview" alt="Your hazard photo" hidden>
+      </label>
+      <p class="polaroid__caption hand" id="photo-caption">the hazard</p>
+      <p class="field-error" id="err-photo" role="alert"></p>
+    </div>
+
+    <div class="fieldnote__where sheet" style="--r:-1deg">
+      <span class="step" aria-hidden="true">2</span>
+      <span class="tape tape--tr" aria-hidden="true"></span>
+      <p class="where__label"><strong id="where-title">Tap where it is</strong> <span id="where-coords" aria-live="polite">No spot yet</span></p>
+      <div id="pick-map" class="pick-map" role="region" aria-labelledby="where-title"></div>
+      <button class="btn btn--line where__gps" type="button" id="use-location" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+        Use my location
+      </button>
+      <p class="field-error" id="err-location" role="alert"></p>
+    </div>
+
+    <div class="fieldnote__note lined" style="--r:1deg">
+      <span class="step" aria-hidden="true">3</span>
+      <label for="note" class="hand">Anything to add? <small>(optional)</small></label>
+      <textarea id="note" name="note" rows="4" maxlength="{{ max_note_length }}"
+                placeholder="Every morning around 8…" aria-describedby="note-count err-note"></textarea>
+      <span class="counter" id="note-count">0 / {{ max_note_length }}</span>
+      <p class="field-error" id="err-note" role="alert"></p>
+      <button class="btn btn--ticket" id="submit-btn" type="submit">
+        <span>Send to the map</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12 L20 12 M14 6 L20 12 L14 18"/></svg>
+      </button>
+      <p class="form-msg" id="form-msg" role="status"></p>
+      <button class="btn btn--line" type="button" id="form-action" hidden></button>
+    </div>
+  </form>
+
+  <div class="analyzing" id="analyzing" hidden role="status" aria-live="polite">
+    <div class="analyzing__card polaroid">
+      <div class="analyzing__track" aria-hidden="true">
+        <svg class="bike" viewBox="0 0 132 84"><use href="#bike-shape"/></svg>
+        <svg class="analyzing__road" viewBox="0 0 600 14" preserveAspectRatio="none"><path d="M0 7 Q 40 3 80 7 T 160 7 T 240 7 T 320 7 T 400 7 T 480 7 T 560 7 T 640 7"/></svg>
+      </div>
+      <p class="hand" id="analyzing-msg">Reading your photo…</p>
+      <small>This can take up to 20 seconds.</small>
+    </div>
+  </div>
+
+  <article class="result polaroid" id="result" hidden aria-labelledby="result-title" tabindex="-1">
+    <span class="stamp result__stamp" aria-hidden="true">ON THE MAP</span>
+    <div class="polaroid__photo" id="result-photo"></div>
+    <div class="detail__body">
+      <div class="detail__chips" id="result-chips"></div>
+      <h2 class="hand detail__title" id="result-title">Report sent</h2>
+      <p class="detail__desc" id="result-desc"></p>
+      <p class="result__review" id="result-review" hidden>The AI wasn't sure about this photo, so a person will check it. It's on the map already.</p>
+      <p class="detail__note hand" id="result-note"></p>
+      <dl class="detail__facts" id="result-facts"></dl>
+      <div class="result__actions">
+        <a class="btn btn--ink" id="result-view" href="{% url 'web:home' %}">See it on the map</a>
+        <button class="btn btn--line" type="button" id="result-again">Report another</button>
+      </div>
+    </div>
+  </article>
+
+  {# Cloned by report.js when there is no photo to show. #}
+  <template id="no-photo-tpl">
+    <div class="no-photo">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><rect x="8" y="18" width="48" height="34" rx="4"/><circle cx="32" cy="35" r="10"/><path d="M22 18 L26 11 L38 11 L42 18"/><path d="M10 54 L54 14"/></svg>
+      <span>No photo</span>
+    </div>
+  </template>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% include "web/partials/leaflet_js.html" %}
+<script type="module" src="{% static 'web/js/report.js' %}"></script>
 {% endblock %}

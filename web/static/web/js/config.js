@@ -6,7 +6,7 @@ export const API_MODE = {
   meta: "live", // M1
   reports: "live", // M1
   reportDetail: "live", // M1
-  createReport: "mock", // M2
+  createReport: "live", // M2
   feedback: "mock", // M3
   segments: "mock", // M4
   scenarios: "mock", // M4
