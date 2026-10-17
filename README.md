@@ -5,9 +5,16 @@ with a photo, AI describes what's in the photo, and you can compare routes to pi
 comfortable one. It's a hackathon prototype for "Fix My City"; demo reports are labelled as
 synthetic.
 
+## Screenshots from the app
 ![Alternative description text](https://i.imgur.com/sGziy1s.png)
 ![Alternative description text](https://i.imgur.com/bN3NRlp.png)
 ![Alternative description text](https://i.imgur.com/eg5krjt.png)
+![Alternative description text](https://i.imgur.com/iEyFkGV.png)
+![Alternative description text](https://i.imgur.com/koXEqXI.png)
+![Alternative description text](https://i.imgur.com/5bYY0Rl.png)
+![Alternative description text](https://i.imgur.com/vyOiDTb.png)
+![Alternative description text](https://i.imgur.com/UEBpLcC.png)
+
 
 ## What you need
 
