@@ -1,0 +1,11 @@
+{
+  "error": {
+    "code": "validation_error",
+    "message": "Human-readable summary, safe to show to the user.",
+    "fields": {
+      "lat": [
+        "Must be a number between -90 and 90."
+      ]
+    }
+  }
+}

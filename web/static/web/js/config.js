@@ -1,0 +1,30 @@
+// Where api.js gets its data from, per endpoint.
+//   "mock" = read web/static/web/mock/*.json (no backend needed)
+//   "live" = call the real backend at /api/...
+// Flip a key to "live" only after backend announces that milestone (docs/plan/WORKFLOW.md).
+export const API_MODE = {
+  meta: "live", // M1
+  reports: "live", // M1
+  reportDetail: "live", // M1
+  createReport: "mock", // M2
+  feedback: "mock", // M3
+  segments: "mock", // M4
+  scenarios: "mock", // M4
+  compare: "mock", // M4
+};
+
+export const API_BASE = "/api";
+
+// Mock POSTs wait this long so loading states can be seen and tested.
+export const MOCK_DELAY_MS = 2000;
+
+// Make every mock call fail, to build error UI. null = normal mock data.
+// One of: null, "ai_rate_limited", "validation_error", "not_found",
+// "duplicate_feedback", "server_error", "timeout", "network_error".
+export const MOCK_FORCE_ERROR = null;
+
+// Mock files live next to this file: /static/web/js/config.js -> /static/web/mock/.
+export const MOCK_BASE = new URL("../mock/", import.meta.url).pathname;
+
+export const TIMEOUT_MS = 10_000;
+export const UPLOAD_TIMEOUT_MS = 30_000; // E5 runs the AI inside the request (~15 s)

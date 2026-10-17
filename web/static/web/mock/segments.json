@@ -1,0 +1,38 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": 7,
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            21.429,
+            41.9958
+          ],
+          [
+            21.4316,
+            41.9962
+          ],
+          [
+            21.4345,
+            41.9965
+          ]
+        ]
+      },
+      "properties": {
+        "id": 7,
+        "name": "Kej 13 Noemvri",
+        "kind": "bike_lane",
+        "condition": "red",
+        "score": 42,
+        "length_m": 460,
+        "hazard_report_ids": [
+          101
+        ],
+        "is_synthetic": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "type": "FeatureCollection",
+  "truncated": false,
+  "features": [
+    {
+      "type": "Feature",
+      "id": 101,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          21.4316,
+          41.9962
+        ]
+      },
+      "properties": {
+        "id": 101,
+        "hazard_type": "car_in_bike_lane",
+        "description": "A silver car is parked across the painted bike lane.",
+        "note": "Every morning around 8",
+        "ai_confidence": 0.91,
+        "needs_review": false,
+        "verification_status": "community_confirmed",
+        "condition": "red",
+        "freshness_weight": 0.86,
+        "created_at": "2026-10-17T08:05:00+02:00",
+        "last_confirmed_at": "2026-10-17T09:40:00+02:00",
+        "photo_url": "/media/reports/2026/10/101.jpg",
+        "is_synthetic": true,
+        "feedback_counts": {
+          "still_there": 2,
+          "resolved": 0,
+          "dispute": 0
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 102,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          21.4251,
+          41.9978
+        ]
+      },
+      "properties": {
+        "id": 102,
+        "hazard_type": "informal_shortcut",
+        "description": "A worn dirt path cuts diagonally through the grass.",
+        "note": "",
+        "ai_confidence": 0.78,
+        "needs_review": false,
+        "verification_status": "unverified",
+        "condition": "green",
+        "freshness_weight": 0.99,
+        "created_at": "2026-10-16T17:30:00+02:00",
+        "last_confirmed_at": "2026-10-16T17:30:00+02:00",
+        "photo_url": null,
+        "is_synthetic": true,
+        "feedback_counts": {
+          "still_there": 0,
+          "resolved": 0,
+          "dispute": 0
+        }
+      }
+    }
+  ]
+}
