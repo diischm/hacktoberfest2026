@@ -1,0 +1,22 @@
+name: PR Security Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  security-review:
+    # Skip PRs from forks: they don't receive secrets and would fail
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      contents: read
+      pull-requests: write
+      statuses: write
+      security-events: write  # required by the upstream reusable workflow (callers can't grant less than it requests); unused by pr-bouncer itself
+    # Pinned to a commit SHA (tag v1 / main as of 2026-10-13); tags can be moved, SHAs can't
+    uses: BeyondMachines/pr-bouncer/.github/workflows/security-review.yml@e26494a0e76aa1ca0641f877e1b14eb83948a26c
+    with:
+      risk_threshold: 6
+      semgrep_rules: "p/security-audit,p/owasp-top-ten,p/python,p/django,p/javascript"
+    secrets:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}

@@ -1,0 +1,5 @@
+ruff==0.17.0
+bandit
+pip-audit
+pytest
+-r requirements.txt

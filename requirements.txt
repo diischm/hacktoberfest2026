@@ -1,0 +1,1 @@
+# App dependencies go here (one per line, e.g. django==5.2).
