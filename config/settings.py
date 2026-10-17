@@ -126,6 +126,8 @@ REST_FRAMEWORK = {
         # Clickable HTML view of the API, only while developing.
         *(["rest_framework.renderers.BrowsableAPIRenderer"] if DEBUG else []),
     ],
+    # Every API error -> {"error": {"code", "message", "fields"}} (see API_CONTRACT.md).
+    "EXCEPTION_HANDLER": "config.exceptions.api_exception_handler",
 }
 
 # --- AI (Google Gemini via a free-tier Google AI Studio key) ----------------------------

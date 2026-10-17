@@ -1,9 +1,24 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.utils import timezone
 
 from reports.choices import FeedbackAction, HazardType, VerificationStatus
+from reports.limits import MAX_NOTE_LENGTH
+
+
+class ReportQuerySet(models.QuerySet):
+    def with_feedback_counts(self):
+        """
+        Adds `<action>_count` (e.g. `still_there_count`) to every report in the SAME query, so a
+        list of 500 reports needs 1 query instead of 501 (the "N+1 query" problem).
+        """
+        return self.annotate(
+            **{
+                f"{action}_count": Count("feedback", filter=Q(feedback__action=action))
+                for action in FeedbackAction.values
+            }
+        )
 
 
 class Report(models.Model):
@@ -26,7 +41,10 @@ class Report(models.Model):
     )
     description = models.TextField(blank=True, default="", help_text="Written by the AI.")
     note = models.CharField(
-        max_length=500, blank=True, default="", help_text="Optional note from the uploader."
+        max_length=MAX_NOTE_LENGTH,
+        blank=True,
+        default="",
+        help_text="Optional note from the uploader.",
     )
     # blank photo is allowed for seed/demo data; the API sends photo_url: null then.
     photo = models.ImageField(upload_to="reports/%Y/%m/", blank=True)
@@ -50,6 +68,9 @@ class Report(models.Model):
     last_confirmed_at = models.DateTimeField(null=True, blank=True)
     resolved_at = models.DateTimeField(null=True, blank=True)
 
+    # A "manager" is how you reach the table (Report.objects). This one adds our queryset methods.
+    objects = ReportQuerySet.as_manager()
+
     class Meta:
         ordering = ("-created_at",)
         indexes = (
@@ -63,7 +84,14 @@ class Report(models.Model):
 
     @property
     def feedback_counts(self) -> dict[str, int]:
-        """{"still_there": n, "resolved": n, "dispute": n}, zeros included. One query."""
+        """
+        {"still_there": n, "resolved": n, "dispute": n}, zeros included.
+
+        Uses the counts from `with_feedback_counts()` when present (no query); otherwise runs
+        one query. List views must use `with_feedback_counts()`.
+        """
+        if hasattr(self, "still_there_count"):
+            return {action: getattr(self, f"{action}_count") for action in FeedbackAction.values}
         counts = {action: 0 for action in FeedbackAction.values}
         rows = self.feedback.values("action").annotate(n=Count("id"))
         for row in rows:
