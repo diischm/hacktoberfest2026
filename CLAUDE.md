@@ -15,6 +15,7 @@ templates + Leaflet + vanilla JS, no build step). `AI_MODE=mock` by default.
   [docs/plan/FRONTEND_NOTES.md](docs/plan/FRONTEND_NOTES.md#one-time-shared-edit-frontends-first-pr)).
   Ask first if you're not sure which side you're on.
 - Never edit or delete the other side's tests; ask them first.
+- For UI work, follow docs/design/README.md and the mockups in docs/design/.
 - Run `make check` before finishing; it must be green.
 - Never commit secrets or `.env`. Only `.env.example` with placeholders.
 - Tests and CI never call the real Gemini API.
