@@ -1,40 +1,86 @@
-/* BikeAble app shell. Plain CSS, no build step. Mobile-first: designed at 390 px. */
+/* BikeAble app styles. Plain CSS, no build step. Mobile-first: designed at 390 px,
+   then min-width steps at 561 / 761 / 981 px (the mockup's breakpoints, flipped).
+   Design: docs/design/README.md (Decisions override docs/design/mockup.html). */
 
-/* Design tokens: PLACEHOLDER values following the style direction in
-   docs/design/README.md (deep green ground, cream paper cards, typewriter labels).
-   Real values come from the mockup (pending). Condition colors (green/amber/red/grey)
-   are deliberately NOT here: they come from GET /api/meta/ at runtime. */
+/* ------------------------------------------------------------------ tokens */
+/* CSS custom properties ("variables"): define once on :root, use with var(--name).
+   They cascade like any property, so an element can override one for its children
+   (e.g. a pin sets --c to its condition color). JS can change them at runtime too. */
 :root {
-  --color-ground: #2f5a46;
-  --color-paper: #f4efe3;
-  --color-ink: #1f2421;
-  --color-ink-muted: #5c625e;
-  --color-accent: #1f4a37;
-  --color-on-ground: #f4efe3;
+  color-scheme: light;
 
-  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  /* the cutting mat (page background) */
+  --board: #375c47;
+  --board-deep: #274836;
+  --board-line: #486956;
+  --board-major: #537561;
 
-  --fs-sm: 0.875rem;
-  --fs-md: 1rem;
-  --fs-lg: 1.25rem;
-  --fs-xl: 1.5rem;
+  /* paper stock */
+  --paper: #f7f1e5;
+  --paper-2: #ece4d3;
+  --kraft: #ceae8c;
+  --kraft-deep: #bc9674;
+  --sticky: #f7ea9b;
+  --lilac: #d9cdf1;
+  --tape: rgb(236 228 207 / 0.72);
 
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-5: 1.5rem;
-  --space-6: 2rem;
+  /* ink */
+  --ink: #241b13;
+  --ink-soft: #564b42;
+  --rule: #c5bdb0;
+  --on-board: #e6f3e8;
+
+  /* the one accent: signal orange (never on the map, Decision 5) */
+  --accent: #e65909;
+  --accent-deep: #c33e00;
+  --accent-ink: #fcf8f1;
+  --focus: #db4600;
+
+  /* condition colors: fallbacks only, overwritten from GET /api/meta/ by map.js */
+  --c-green: #2e7d32;
+  --c-amber: #f9a825;
+  --c-red: #c62828;
+  --c-grey: #757575;
+
+  /* type: Google Fonts (base.html), with fallbacks */
+  --font-hand: "Gochi Hand", "Comic Neue", "Segoe Print", cursive;
+  --font-body: "Bricolage Grotesque", "Segoe UI", ui-sans-serif, sans-serif;
+  --font-mono: "Space Mono", ui-monospace, "SFMono-Regular", monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.75rem;
+  --text-2xl: 2.4rem;
+  --text-display: clamp(2.6rem, 6vw, 4.6rem);
+
+  --space-2xs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
 
   --radius-sm: 4px;
   --radius-md: 10px;
+  --radius-pill: 999px;
 
-  --shadow-card: 0 2px 0 rgb(0 0 0 / 0.15), 0 6px 16px rgb(0 0 0 / 0.18);
+  --shadow-paper: 0 1px 0 rgb(35 50 38 / 0.25), 0 10px 22px -10px rgb(7 27 12 / 0.55);
+  --shadow-lift: 0 2px 0 rgb(35 50 38 / 0.2), 0 22px 34px -14px rgb(4 22 8 / 0.6);
 
-  --tap-min: 44px;
-  --header-h: 52px;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 120ms;
+  --dur-short: 220ms;
+  --dur-long: 420ms;
+  --dur-scene: 700ms;
+
+  --topbar-h: 58px; /* 64px from 761px up */
   --nav-h: 60px;
+  --tap-min: 44px;
 
   /* Phone notches / home indicator; 0 on devices without them. */
   --safe-top: env(safe-area-inset-top, 0px);
@@ -43,85 +89,202 @@
   --safe-right: env(safe-area-inset-right, 0px);
 }
 
+/* ------------------------------------------------------------------ base */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
 html,
 body {
-  height: 100%;
+  overflow-x: clip;
 }
 
 body {
   margin: 0;
+  min-height: 100dvh;
   font-family: var(--font-body);
-  font-size: var(--fs-md);
+  font-size: var(--text-md);
   line-height: 1.5;
-  color: var(--color-ink);
-  background: var(--color-ground);
-  -webkit-text-size-adjust: 100%;
+  color: var(--ink);
+  background-color: var(--board);
+  background-image:
+    linear-gradient(var(--board-major) 1px, transparent 1px),
+    linear-gradient(90deg, var(--board-major) 1px, transparent 1px),
+    linear-gradient(var(--board-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--board-line) 1px, transparent 1px);
+  background-size:
+    120px 120px,
+    120px 120px,
+    24px 24px,
+    24px 24px;
+  background-position: -1px -1px;
+  background-attachment: fixed;
 }
 
-/* Full-height column: header, scrollable main, fixed bottom nav. */
-.shell {
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
+/* print grain over everything */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 90;
+  opacity: 0.11;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-.app-header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  min-height: calc(var(--header-h) + var(--safe-top));
-  padding: var(--safe-top) calc(var(--space-4) + var(--safe-right)) 0
-    calc(var(--space-4) + var(--safe-left));
-  display: flex;
-  align-items: center;
-  background: var(--color-ground);
-  color: var(--color-on-ground);
+img {
+  max-width: 100%;
+  display: block;
 }
 
-.app-header__title {
-  font-family: var(--font-mono);
-  font-size: var(--fs-lg);
-  font-weight: 700;
-  letter-spacing: 0.04em;
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-weight: 400;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+
+p {
+  margin: 0;
+}
+
+a {
   color: inherit;
-  text-decoration: none;
-  min-height: var(--tap-min);
-  display: inline-flex;
-  align-items: center;
 }
 
-.app-main {
-  flex: 1;
-  padding: var(--space-4) calc(var(--space-4) + var(--safe-right))
-    calc(var(--nav-h) + var(--safe-bottom) + var(--space-4))
-    calc(var(--space-4) + var(--safe-left));
+button {
+  font: inherit;
+  color: inherit;
 }
 
-/* Paper card: the basic surface of the scrapbook look. */
-.card {
-  background: var(--color-paper);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-card);
-  padding: var(--space-5) var(--space-4);
-  max-width: 40rem;
-  margin: 0 auto;
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
 }
 
-.card__title {
-  margin: 0 0 var(--space-3);
-  font-family: var(--font-mono);
-  font-size: var(--fs-xl);
-  line-height: 1.2;
+[hidden] {
+  display: none !important;
+}
+
+.hand {
+  font-family: var(--font-hand);
+  letter-spacing: 0.01em;
 }
 
 .muted {
-  color: var(--color-ink-muted);
+  color: var(--ink-soft);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------------ shell */
+.topbar {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 40;
+  height: calc(var(--topbar-h) + var(--safe-top));
+  padding: var(--safe-top) max(16px, var(--safe-right)) 0 max(16px, var(--safe-left));
+  display: flex;
+  align-items: center;
+  background: linear-gradient(var(--board-deep), rgb(39 72 54 / 0));
+}
+
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  min-height: var(--tap-min);
+  text-decoration: none;
+  color: var(--on-board);
+  font-family: var(--font-hand);
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.wordmark__bike {
+  width: 44px;
+  height: 28px;
+  overflow: visible;
+}
+
+/* bike drawing (<defs> in base.html). Its parts live inside <use> clones, which outside
+   selectors like ".wordmark .b-tyre" can't reach, but inherited custom properties can:
+   so the parts read --bike-* and each place that shows the bike sets them. */
+.b-tyre,
+.b-seat,
+.b-bar,
+.b-body,
+.b-arm,
+.b-leg,
+.b-crank line {
+  fill: none;
+  stroke: var(--bike-ink, var(--ink));
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.b-tyre { stroke-width: 3.2; }
+.b-seat,
+.b-bar { stroke-width: 3; }
+.b-body,
+.b-arm,
+.b-leg { stroke-width: 3.6; }
+.b-crank line { stroke-width: 2.4; }
+.b-rim,
+.b-spokes line {
+  fill: none;
+  stroke: var(--bike-soft, var(--ink-soft));
+  stroke-width: 1;
+}
+.b-leg--back { stroke: var(--bike-soft, var(--ink-soft)); }
+.b-hub,
+.b-crank circle { fill: var(--bike-ink, var(--ink)); }
+.b-head { fill: var(--bike-head, var(--paper)); stroke: var(--bike-ink, var(--ink)); stroke-width: 2; }
+.b-frame {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 3.4;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.b-helmet { fill: var(--accent); }
+.wordmark {
+  --bike-ink: var(--on-board);
+  --bike-soft: #b9cbbd;
+  --bike-head: var(--board);
+}
+.spin {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.app-main {
+  padding: calc(var(--topbar-h) + var(--safe-top) + var(--space-md)) max(16px, var(--safe-right))
+    calc(var(--nav-h) + var(--safe-bottom) + var(--space-lg)) max(16px, var(--safe-left));
+}
+
+/* the map page lays itself out between the bars (see .map-page) */
+.app-main--map {
+  padding: 0;
 }
 
 .bottom-nav {
@@ -129,15 +292,16 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 10;
+  z-index: 30;
   display: flex;
   height: calc(var(--nav-h) + var(--safe-bottom));
   padding: 0 var(--safe-right) var(--safe-bottom) var(--safe-left);
-  background: var(--color-paper);
-  border-top: 1px solid rgb(0 0 0 / 0.12);
+  background: var(--paper);
+  box-shadow: 0 -1px 0 var(--rule), 0 -8px 18px -10px rgb(7 27 12 / 0.45);
 }
 
 .bottom-nav__item {
+  position: relative;
   flex: 1;
   min-height: var(--tap-min);
   display: flex;
@@ -146,8 +310,10 @@ body {
   justify-content: center;
   gap: 2px;
   font-family: var(--font-mono);
-  font-size: var(--fs-sm);
-  color: var(--color-ink-muted);
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
   text-decoration: none;
 }
 
@@ -162,19 +328,699 @@ body {
 }
 
 .bottom-nav__item[aria-current="page"] {
-  color: var(--color-accent);
+  color: var(--ink);
   font-weight: 700;
 }
 
-.bottom-nav__item:focus-visible,
-.app-header__title:focus-visible {
-  outline: 3px solid var(--color-accent);
+.bottom-nav__item[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 28%;
+  right: 28%;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
+  background: var(--ink);
+}
+
+.bottom-nav__item:focus-visible {
   outline-offset: -3px;
 }
 
-/* Wider screens: same layout, just more breathing room. */
-@media (min-width: 768px) {
-  .app-main {
-    padding-top: var(--space-6);
+/* simple paper card (report / routes placeholders, dev page) */
+.card {
+  background: var(--paper);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-paper);
+  padding: var(--space-lg) var(--space-md);
+  max-width: 40rem;
+  margin: 0 auto;
+}
+
+.card__title {
+  margin: 0 0 var(--space-sm);
+  font-family: var(--font-hand);
+  font-size: var(--text-2xl);
+  line-height: 1.1;
+}
+
+/* ------------------------------------------------------------------ paper materials */
+.sheet {
+  position: relative;
+  background: var(--paper);
+  box-shadow: var(--shadow-paper);
+}
+
+.sticky {
+  background: var(--sticky);
+}
+
+.tape {
+  position: absolute;
+  z-index: 3;
+  width: 96px;
+  height: 28px;
+  background: var(--tape);
+  clip-path: polygon(3% 0, 97% 4%, 100% 30%, 96% 55%, 100% 100%, 2% 96%, 0 66%, 4% 40%);
+  pointer-events: none;
+  animation: tape-on var(--dur-long) var(--ease-out) 360ms both;
+}
+.tape--tl { top: -12px; left: 18px; rotate: -8deg; }
+.tape--br { bottom: -12px; right: 24px; rotate: -6deg; }
+@keyframes tape-on {
+  from { opacity: 0; transform: scaleX(0.2); }
+  to { opacity: 1; transform: none; }
+}
+
+/* mini receipt: mono text with zigzag top + bottom edges */
+.receipt {
+  position: relative;
+  background: var(--paper);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  box-shadow: var(--shadow-paper);
+}
+.receipt::before,
+.receipt::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background:
+    linear-gradient(135deg, var(--paper) 50%, transparent 50%) 0 0 / 10px 8px repeat-x,
+    linear-gradient(-135deg, var(--paper) 50%, transparent 50%) 0 0 / 10px 8px repeat-x;
+}
+.receipt::before { top: -8px; transform: scaleY(-1); }
+.receipt::after { bottom: -8px; }
+
+.receipt__rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+.receipt__rows li {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.receipt__rows li::after {
+  content: "";
+  order: 1;
+  flex: 1;
+  min-width: 8px;
+  border-bottom: 1.5px dotted var(--rule);
+  transform: translateY(-3px);
+}
+.receipt__rows b {
+  order: 2;
+  font-variant-numeric: tabular-nums;
+}
+
+/* condition swatch: always with an ink outline (amber on paper is only 1.75:1) */
+.sw {
+  --c: var(--c-grey);
+  flex: none;
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--c);
+  border: 1.5px solid var(--ink);
+  align-self: center;
+}
+
+/* ------------------------------------------------------------------ buttons */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--tap-min);
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: var(--shadow-paper);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--dur-short) var(--ease-out);
+}
+.pill:hover,
+.pill[aria-expanded="true"] { background: var(--sticky); }
+.pill svg { width: 14px; height: 14px; fill: currentColor; stroke: currentColor; stroke-width: 1.2; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  min-height: var(--tap-min);
+  padding: 8px 18px;
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-pill);
+  font-weight: 700;
+  font-size: var(--text-sm);
+  text-decoration: none;
+  cursor: pointer;
+}
+.btn--ink { background: var(--ink); color: var(--paper); }
+.btn--ink:hover { background: var(--board-deep); border-color: var(--board-deep); }
+
+/* "Report here": --ink background, --paper text (Decision 5, never accent on the map) */
+.stamp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 12px 20px 12px 16px;
+  border-radius: var(--radius-pill);
+  background: var(--ink);
+  color: var(--paper);
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: var(--shadow-lift);
+  transform: rotate(-2deg);
+  transition: transform var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out);
+}
+.stamp-btn:hover { transform: rotate(0deg) translateY(-3px); background: var(--board-deep); }
+.stamp-btn svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; }
+
+/* custom checkbox (layers panel) */
+.check {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  min-height: 32px;
+  cursor: pointer;
+  font-size: var(--text-sm);
+}
+.check input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.box {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--ink);
+  border-radius: 3px;
+}
+.box svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: var(--accent-deep);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  transition: stroke-dashoffset var(--dur-long) var(--ease-out);
+}
+.check input:checked + .box svg { stroke-dashoffset: 0; }
+.check input:focus-visible + .box { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+/* ------------------------------------------------------------------ MAP page */
+/* Fills the space between top bar and bottom nav; nothing on it scrolls the page. */
+.map-page {
+  position: fixed;
+  top: calc(var(--topbar-h) + var(--safe-top));
+  bottom: calc(var(--nav-h) + var(--safe-bottom));
+  left: 0;
+  right: 0;
+  padding: 2px max(10px, var(--safe-right)) 12px max(10px, var(--safe-left));
+}
+
+.sheet--map {
+  height: 100%;
+  padding: 6px;
+  /* own stacking context: Leaflet's internal z-indexes (400-1000) stay inside the map */
+  isolation: isolate;
+}
+
+.map {
+  width: 100%;
+  height: 100%;
+  background: var(--paper-2);
+}
+
+.leaflet-container { font-family: var(--font-body); background: var(--paper-2); }
+.leaflet-tile-pane { filter: sepia(0.28) saturate(0.78) contrast(0.96) brightness(1.02); }
+.leaflet-container .leaflet-control-attribution {
+  font-size: 10px;
+  color: var(--ink);
+  background: rgb(247 241 229 / 0.88);
+}
+.leaflet-container .leaflet-control-attribution a { color: var(--ink); text-decoration: underline; }
+.leaflet-control-zoom a {
+  color: var(--ink) !important;
+  background: var(--paper) !important;
+  font-family: var(--font-mono);
+}
+.leaflet-touch .leaflet-bar,
+.leaflet-bar {
+  border: 0;
+  box-shadow: var(--shadow-paper);
+}
+
+/* overlay controls on top of the map; the layer itself lets clicks through to the map */
+.map-ui {
+  position: absolute;
+  inset: 16px 18px 20px;
+  z-index: 1;
+  pointer-events: none;
+}
+.map-ui > *,
+.map-ui__stack > * { pointer-events: auto; }
+
+.layers-btn {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.layers {
+  position: absolute;
+  top: 54px;
+  left: 0;
+  width: min(280px, 100%);
+  max-height: calc(100% - 64px);
+  overflow-y: auto;
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-lift);
+  transform: rotate(-1deg);
+  transform-origin: top left;
+  animation: unfold var(--dur-long) var(--ease-out) both;
+  z-index: 2; /* above the summary card */
+}
+@keyframes unfold {
+  from { opacity: 0; transform: rotate(-6deg) scale(0.85) translateY(-8px); }
+  to { opacity: 1; transform: rotate(-1deg); }
+}
+.layers h2 { font-size: var(--text-xl); margin-bottom: var(--space-xs); }
+.layers__group { border: 0; padding: 0; margin: 0 0 var(--space-md); display: grid; gap: 2px; }
+.layers__group:last-child { margin-bottom: 0; }
+.layers__group legend {
+  margin-bottom: 6px;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.key {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  font-size: var(--text-sm);
+}
+.key li { display: flex; align-items: center; gap: 8px; }
+.key__note { margin-top: 6px; font-size: var(--text-xs); }
+
+/* status notes: loading / error / empty / truncated (never a blocking overlay) */
+.map-status {
+  position: absolute;
+  top: 54px;
+  left: 50%;
+  translate: -50% 0;
+  width: max-content;
+  max-width: 100%;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-xs);
+  pointer-events: none;
+}
+.map-status > * { pointer-events: auto; }
+.map-status__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--paper);
+  box-shadow: var(--shadow-paper);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.04em;
+}
+.map-status__wheel {
+  width: 16px;
+  height: 16px;
+  border: 2.5px solid var(--ink);
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+.map-status__note {
+  max-width: 260px;
+  padding: var(--space-sm) var(--space-md);
+  text-align: center;
+  font-size: var(--text-sm);
+  box-shadow: var(--shadow-paper);
+  transform: rotate(-1deg);
+}
+.map-status__error {
+  max-width: 280px;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-md);
+  text-align: center;
+  font-size: var(--text-sm);
+  background: var(--paper);
+  border-top: 4px solid var(--accent-deep);
+  box-shadow: var(--shadow-lift);
+}
+.map-status__error strong { font-family: var(--font-hand); font-size: var(--text-lg); font-weight: 400; }
+
+/* bottom-left: legend (wide screens) + summary card */
+.map-ui__stack {
+  position: absolute;
+  left: 0;
+  bottom: 8px;
+  display: grid;
+  gap: var(--space-md);
+  justify-items: start;
+  pointer-events: none;
+}
+
+.legend {
+  display: none; /* phones: the key lives in the Layers note */
+  width: 180px;
+  padding: var(--space-sm) var(--space-sm) var(--space-md);
+  transform: rotate(-1.5deg);
+}
+.legend b { display: block; margin-bottom: 6px; letter-spacing: 0.1em; }
+.legend .key { font-size: var(--text-xs); }
+
+/* "Today on the map" receipt, shrunk to a map overlay (Decision 2) */
+.summary {
+  width: 136px;
+  padding: 6px 8px 8px;
+  font-size: 11px;
+  line-height: 1.3;
+  transform: rotate(1deg);
+}
+.summary__head {
+  display: block;
+  margin-bottom: 4px;
+  padding-bottom: 3px;
+  border-bottom: 1.5px dashed var(--ink-soft);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+.summary__foot { margin-top: 4px; color: var(--ink-soft); }
+
+.fab {
+  position: absolute;
+  right: 0;
+  bottom: 12px;
+}
+
+/* map pins (L.divIcon). --c = condition color from meta */
+.pin-icon { background: none; border: 0; }
+.pin { --c: var(--c-grey); position: relative; width: 36px; height: 44px; }
+.pin__head {
+  position: absolute;
+  top: 0;
+  left: 2px;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50% 50% 50% 4px;
+  transform: rotate(-45deg);
+  background: var(--c);
+  border: 2.5px solid var(--paper);
+  box-shadow: 0 4px 8px rgb(20 35 24 / 0.45);
+  transition: transform var(--dur-short) var(--ease-out);
+}
+.pin__head svg {
+  width: 17px;
+  height: 17px;
+  transform: rotate(45deg);
+  fill: none;
+  stroke: var(--paper);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* contrast fix: amber pins get an ink icon and an ink ring around the paper border */
+.pin[data-cond="amber"] .pin__head {
+  box-shadow: 0 0 0 1.5px var(--ink), 0 4px 8px rgb(20 35 24 / 0.45);
+}
+.pin[data-cond="amber"] .pin__head svg { stroke: var(--ink); }
+.pin.is-synthetic .pin__head { outline: 2px dashed var(--ink); outline-offset: 2px; }
+.pin.is-info .pin__head,
+.pin.is-info .pin__head svg { border-radius: 50%; transform: none; }
+.pin.is-active .pin__head { transform: rotate(-45deg) scale(1.2); }
+.pin.is-info.is-active .pin__head { transform: scale(1.2); }
+.leaflet-marker-icon:focus-visible { outline: none; }
+.leaflet-marker-icon:focus-visible .pin__head { outline: 3px solid var(--focus); outline-offset: 3px; }
+.pin-drop { animation: pin-drop var(--dur-scene) var(--ease-out) both; }
+@keyframes pin-drop {
+  from { opacity: 0; transform: translateY(-26px); }
+}
+
+/* ------------------------------------------------------------------ report detail sheet */
+/* Phones: bottom sheet. The middle scrolls; the feedback bar stays pinned (Decision 3). */
+.detail {
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: 80%;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  box-shadow: var(--shadow-lift);
+  animation: sheet-up var(--dur-long) var(--ease-out) both;
+}
+.detail:focus { outline: none; }
+.detail.is-closing { animation: sheet-down calc(var(--dur-long) * 0.75) var(--ease-in) both; }
+@keyframes sheet-up {
+  from { transform: translateY(100%); }
+}
+@keyframes sheet-down {
+  to { transform: translateY(100%); }
+}
+
+.detail__grip {
+  flex: none;
+  display: grid;
+  place-items: center;
+  height: 22px;
+  touch-action: none;
+  cursor: grab;
+}
+.detail__grip::before {
+  content: "";
+  width: 44px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--rule);
+}
+
+.detail__close {
+  position: absolute;
+  top: 30px;
+  right: 22px;
+  z-index: 2;
+  width: var(--tap-min);
+  height: var(--tap-min);
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: var(--paper);
+  box-shadow: var(--shadow-paper);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+.detail__close:hover { background: var(--sticky); }
+
+.detail__scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 12px var(--space-md);
+}
+
+.detail__photo {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--paper-2);
+}
+.detail__photo img { width: 100%; height: 100%; object-fit: cover; filter: saturate(0.9) contrast(1.02); }
+
+.no-photo {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 6px;
+  background: repeating-linear-gradient(45deg, var(--paper-2) 0 12px, var(--paper) 12px 24px);
+  color: var(--ink-soft);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.no-photo svg {
+  width: 54px;
+  height: 54px;
+  fill: none;
+  stroke: var(--ink-soft);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.detail__body { display: grid; gap: var(--space-sm); padding: var(--space-md) 4px 0; }
+.detail__title { font-size: var(--text-2xl); line-height: 1; }
+.detail__desc:empty,
+.detail__note:empty,
+.detail__msg:empty { display: none; }
+.detail__note { font-size: var(--text-lg); color: var(--ink-soft); }
+.detail__msg { font-size: var(--text-sm); font-weight: 600; color: var(--accent-deep); }
+.detail__chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.detail__facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px var(--space-sm);
+  margin: 0;
+  font-size: var(--text-sm);
+}
+.detail__facts dt { padding-top: 2px; font-family: var(--font-mono); font-size: var(--text-xs); color: var(--ink-soft); }
+.detail__facts dd { margin: 0; font-variant-numeric: tabular-nums; }
+
+/* skeleton lines while the first data arrives */
+.skeleton {
+  display: block;
+  height: 1em;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, var(--paper-2), var(--paper), var(--paper-2)) 0 0 / 200% 100%;
+  animation: shimmer 1.2s linear infinite;
+}
+@keyframes shimmer {
+  to { background-position: -200% 0; }
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border: 1.5px solid var(--ink);
+  border-radius: var(--radius-pill);
+  background: var(--paper);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+.chip--cond { --c: var(--c-grey); background: var(--c); border-color: var(--c); color: var(--paper); }
+/* contrast fixes: paper on amber is 1.75:1 and on grey 4.1:1, so ink text there */
+.chip--cond[data-cond="amber"],
+.chip--cond[data-cond="grey"] { color: var(--ink); }
+.chip--cond[data-cond="amber"] { border-color: var(--ink); }
+.chip--warn { border-style: dashed; }
+.chip--demo { background: var(--sticky); }
+
+/* sticky feedback bar (Decision 3); buttons wired in feat/report-feedback */
+.detail__actions {
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  padding: 10px 12px 12px;
+  border-top: 1.5px dashed var(--rule);
+  background: var(--paper);
+}
+.fb-btn {
+  display: grid;
+  justify-items: center;
+  gap: 0;
+  min-height: 56px;
+  padding: 6px 4px;
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-sm);
+  background: var(--paper);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+}
+.fb-btn b { font-family: var(--font-mono); font-size: var(--text-lg); font-variant-numeric: tabular-nums; }
+/* disabled but still readable: the counts are information */
+.fb-btn:disabled { border-style: dashed; cursor: not-allowed; }
+
+/* ------------------------------------------------------------------ larger screens */
+@media (min-width: 561px) {
+  .summary { width: 170px; padding: 8px 10px 10px; font-size: var(--text-xs); line-height: 1.5; }
+}
+
+@media (min-width: 761px) {
+  :root { --topbar-h: 64px; }
+  .wordmark { font-size: 1.85rem; }
+  .app-main { padding-top: calc(var(--topbar-h) + var(--safe-top) + var(--space-xl)); }
+  .map-page { padding: 4px 22px 18px; }
+  .sheet--map { padding: 10px; }
+  .map-ui { inset: 26px 30px 30px; }
+  .legend { display: block; }
+
+  /* detail becomes a polaroid card on the right */
+  .detail {
+    top: 96px; /* below Leaflet's zoom buttons */
+    right: 30px;
+    left: auto;
+    bottom: auto;
+    width: 360px;
+    max-height: calc(100% - 122px);
+    padding-top: 12px;
+    border-radius: 0;
+    transform: rotate(1.5deg);
+    animation-name: slide-in;
   }
+  .detail.is-closing { animation-name: slide-out; }
+  @keyframes slide-in {
+    from { opacity: 0; transform: translateX(40px) rotate(6deg); }
+    to { opacity: 1; transform: rotate(1.5deg); }
+  }
+  @keyframes slide-out {
+    to { opacity: 0; transform: translateX(40px) rotate(6deg); }
+  }
+  .detail__grip { display: none; }
+  .detail__close { top: 20px; right: 20px; }
+  .detail__photo { aspect-ratio: 4 / 3; }
+}
+
+@media (min-width: 981px) {
+  .layers { width: 300px; }
+}
+
+/* ------------------------------------------------------------------ reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 150ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 150ms !important;
+  }
+  .map-status__wheel,
+  .skeleton { animation: none !important; }
 }

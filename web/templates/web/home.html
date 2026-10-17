@@ -1,9 +1,97 @@
 {% extends "web/base.html" %}
+{% load static %}
+
+{% block title %}Hazard map · BikeAble{% endblock %}
+
+{% block head %}
+{# Pinned version + SRI hash: the browser refuses the file if unpkg ever serves different bytes. #}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+{% endblock %}
+
+{% block main_class %}app-main app-main--map{% endblock %}
 
 {% block content %}
-<section class="card">
-  <h1 class="card__title">BikeAble</h1>
-  <p>Report cycling hazards in Skopje and find the most comfortable route.</p>
-  <p class="muted">The map is coming soon.</p>
-</section>
+<h1 class="visually-hidden">BikeAble hazard map</h1>
+
+<div class="map-page">
+  <div class="sheet sheet--map">
+    <span class="tape tape--tl" aria-hidden="true"></span>
+    <span class="tape tape--br" aria-hidden="true"></span>
+    <div id="map" class="map" role="region" aria-label="Map of reported hazards"></div>
+  </div>
+
+  <div class="map-ui">
+    <button class="pill layers-btn" id="layers-btn" type="button" aria-expanded="false" aria-controls="layers" disabled>
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1 L15 5 L8 9 L1 5 Z"/><path d="M1 8 L8 12 L15 8" fill="none"/><path d="M1 11 L8 15 L15 11" fill="none"/></svg>
+      <span>Layers</span>
+    </button>
+
+    <div class="layers sticky" id="layers" hidden>
+      <h2 class="hand">Show on map</h2>
+      <fieldset class="layers__group" id="layer-types"><legend>What riders reported</legend></fieldset>
+      <fieldset class="layers__group">
+        <legend>Extras</legend>
+        <label class="check"><input type="checkbox" id="show-resolved"><span class="box" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M4 11 L8 15 L16 4"/></svg></span>Resolved reports</label>
+        <label class="check"><input type="checkbox" id="show-demo" checked><span class="box" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M4 11 L8 15 L16 4"/></svg></span>Demo data</label>
+      </fieldset>
+      <fieldset class="layers__group">
+        <legend>Key</legend>
+        <ul class="key" id="layers-key"></ul>
+        <p class="key__note muted">Dashed ring = demo data. Faded = older report. Round pin = information, not a hazard.</p>
+      </fieldset>
+    </div>
+
+    <div class="map-status" aria-live="polite">
+      <p class="map-status__pill" id="map-loading" hidden><span class="map-status__wheel" aria-hidden="true"></span>Loading reports…</p>
+      <div class="map-status__error" id="map-error" role="alert" hidden>
+        <strong>Couldn't load the map</strong>
+        <p id="map-error-text"></p>
+        <button class="btn btn--ink" type="button" id="map-retry">Try again</button>
+      </div>
+      <p class="map-status__note sticky" id="map-note" hidden></p>
+    </div>
+
+    <div class="map-ui__stack">
+      <aside class="legend receipt" aria-label="Legend">
+        <b>KEY</b>
+        <ul class="key" id="legend-key"></ul>
+        <p class="key__note muted">Dashed ring = demo data. Faded = older report.</p>
+      </aside>
+      <aside class="summary receipt" id="summary" aria-labelledby="summary-title" hidden>
+        <span class="summary__head" id="summary-title">ON THE MAP</span>
+        <ul class="receipt__rows" id="summary-rows"></ul>
+        <p class="summary__foot" id="summary-demo"></p>
+      </aside>
+    </div>
+
+    <a class="fab stamp-btn" id="report-here" href="{% url 'web:report' %}" data-base="{% url 'web:report' %}">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><circle cx="12" cy="13.5" r="3.6"/><path d="M8 7 L9.5 4 L14.5 4 L16 7"/></svg>
+      <span>Report here</span>
+    </a>
+  </div>
+
+  <section class="detail" id="detail" role="dialog" aria-labelledby="detail-title" tabindex="-1" hidden>
+    <div class="detail__grip" id="detail-grip" aria-hidden="true"></div>
+    <button class="detail__close" type="button" id="detail-close" aria-label="Close report">&times;</button>
+    <div class="detail__scroll">
+      <div class="detail__photo" id="detail-photo"></div>
+      <div class="detail__body">
+        <div class="detail__chips" id="detail-chips"></div>
+        <h2 class="hand detail__title" id="detail-title">Report</h2>
+        <p class="detail__desc" id="detail-desc"></p>
+        <p class="detail__note hand" id="detail-note"></p>
+        <dl class="detail__facts" id="detail-facts"></dl>
+        <p class="detail__msg" id="detail-msg" role="status"></p>
+      </div>
+    </div>
+    <div class="detail__actions" id="detail-actions" role="group" aria-label="Is it still there?"></div>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script type="module" src="{% static 'web/js/map.js' %}"></script>
 {% endblock %}
