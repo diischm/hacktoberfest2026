@@ -1,0 +1,92 @@
+{% extends "web/base.html" %}
+{% load static %}
+
+{% block title %}API test · BikeAble{% endblock %}
+
+{% block head %}
+<style>
+  .dev { max-width: 40rem; margin: 0 auto; display: grid; gap: var(--space-4); }
+  .dev .card { margin: 0; }
+  .dev h2 { margin: 0 0 var(--space-3); font-family: var(--font-mono); font-size: var(--fs-lg); }
+  .dev-grid { display: grid; grid-template-columns: auto 1fr; gap: var(--space-2) var(--space-3); align-items: center; }
+  .dev label { font-family: var(--font-mono); font-size: var(--fs-sm); }
+  .dev input, .dev select, .dev button { font: inherit; min-height: var(--tap-min); padding: 0 var(--space-2); }
+  .dev button { cursor: pointer; }
+  .dev-call { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; padding: var(--space-2) 0; border-top: 1px dashed rgb(0 0 0 / 0.2); }
+  .dev-call button { min-width: 11rem; }
+  .dev-call input { flex: 1; min-width: 6rem; }
+  .dev-out { margin: 0; max-height: 60vh; overflow: auto; background: var(--color-ink); color: var(--color-paper); padding: var(--space-3); border-radius: var(--radius-sm); font-size: var(--fs-sm); white-space: pre-wrap; word-break: break-word; }
+</style>
+{% endblock %}
+
+{% block csrf %}{% csrf_token %}{% endblock %}
+
+{% block content %}
+<div class="dev">
+  <section class="card">
+    <h2>Modes (this page only)</h2>
+    <p class="muted">Changes here last until reload. Permanent defaults: <code>web/static/web/js/config.js</code>.</p>
+    <div class="dev-grid" id="modes"></div>
+    <div class="dev-grid" style="margin-top: var(--space-3)">
+      <label for="force-error">Mock error</label>
+      <select id="force-error">
+        <option value="">none</option>
+        <option>ai_rate_limited</option>
+        <option>validation_error</option>
+        <option>not_found</option>
+        <option>duplicate_feedback</option>
+        <option>server_error</option>
+        <option>timeout</option>
+        <option>network_error</option>
+      </select>
+      <label for="delay">Mock POST delay (ms)</label>
+      <input id="delay" type="number" min="0" step="500">
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Calls</h2>
+    <div class="dev-call"><button data-call="getMeta">getMeta()</button></div>
+    <div class="dev-call">
+      <button data-call="getReports">getReports()</button>
+      <input id="bbox" placeholder="bbox (optional)" aria-label="bbox">
+      <label><input id="include-resolved" type="checkbox"> include resolved</label>
+    </div>
+    <div class="dev-call">
+      <button data-call="getReport">getReport(id)</button>
+      <input id="report-id" value="9001" aria-label="report id">
+    </div>
+    <div class="dev-call">
+      <button data-call="createReport">createReport(form)</button>
+      <input id="photo" type="file" accept="image/*" aria-label="photo">
+      <input id="lat" value="41.9962" aria-label="lat">
+      <input id="lng" value="21.4316" aria-label="lng">
+      <input id="note" placeholder="note" aria-label="note">
+    </div>
+    <div class="dev-call">
+      <button data-call="sendFeedback">sendFeedback(id, action)</button>
+      <input id="feedback-id" value="9001" aria-label="report id">
+      <select id="feedback-action" aria-label="action">
+        <option>still_there</option>
+        <option>resolved</option>
+        <option>dispute</option>
+      </select>
+    </div>
+    <div class="dev-call"><button data-call="getSegments">getSegments()</button></div>
+    <div class="dev-call"><button data-call="getScenarios">getScenarios()</button></div>
+    <div class="dev-call">
+      <button data-call="compareRoutes">compareRoutes(id)</button>
+      <input id="scenario" value="city-park-to-square" aria-label="scenario id">
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Result</h2>
+    <pre class="dev-out" id="out" aria-live="polite">Press a button.</pre>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="{% static 'web/js/dev_api.js' %}"></script>
+{% endblock %}

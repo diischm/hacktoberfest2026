@@ -1,0 +1,18 @@
+{
+  "scenarios": [
+    {
+      "id": "city-park-to-square",
+      "name": "City Park → Macedonia Square",
+      "from": {
+        "name": "City Park",
+        "lat": 41.9993,
+        "lng": 21.418
+      },
+      "to": {
+        "name": "Macedonia Square",
+        "lat": 41.9962,
+        "lng": 21.4316
+      }
+    }
+  ]
+}

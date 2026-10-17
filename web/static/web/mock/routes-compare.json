@@ -1,0 +1,82 @@
+{
+  "scenario": {
+    "id": "city-park-to-square",
+    "name": "City Park → Macedonia Square",
+    "from": {
+      "name": "City Park",
+      "lat": 41.9993,
+      "lng": 21.418
+    },
+    "to": {
+      "name": "Macedonia Square",
+      "lat": 41.9962,
+      "lng": 21.4316
+    }
+  },
+  "recommended_route_id": "park-inner",
+  "routes": [
+    {
+      "id": "park-inner",
+      "name": "Through the park",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            21.418,
+            41.9993
+          ],
+          [
+            21.4251,
+            41.9978
+          ],
+          [
+            21.4316,
+            41.9962
+          ]
+        ]
+      },
+      "length_m": 1380,
+      "score": 84,
+      "condition": "green",
+      "hazards_on_route": [
+        102
+      ],
+      "explanation": [
+        "Mostly separated paths",
+        "1 informal shortcut (information only)",
+        "No fresh hazards reported"
+      ]
+    },
+    {
+      "id": "quay-bike-lane",
+      "name": "Quay bike lane",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            21.418,
+            41.9993
+          ],
+          [
+            21.429,
+            41.9958
+          ],
+          [
+            21.4316,
+            41.9962
+          ]
+        ]
+      },
+      "length_m": 1210,
+      "score": 46,
+      "condition": "red",
+      "hazards_on_route": [
+        101
+      ],
+      "explanation": [
+        "Shortest option",
+        "Car in bike lane, confirmed by 2 riders, 1 h ago"
+      ]
+    }
+  ]
+}

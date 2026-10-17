@@ -1,0 +1,8 @@
+{
+  "error": {
+    "code": "ai_rate_limited",
+    "message": "The photo analyzer is busy. Please try again in a minute.",
+    "fields": {},
+    "retry_after_seconds": 60
+  }
+}

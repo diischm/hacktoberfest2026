@@ -1,0 +1,22 @@
+{
+  "id": 103,
+  "lat": 41.9951,
+  "lng": 21.4302,
+  "hazard_type": "car_on_crosswalk",
+  "description": "A black SUV is stopped on the zebra crossing.",
+  "note": "",
+  "ai_confidence": 0.87,
+  "needs_review": false,
+  "verification_status": "unverified",
+  "condition": "red",
+  "freshness_weight": 1.0,
+  "created_at": "2026-10-17T11:02:13+02:00",
+  "last_confirmed_at": "2026-10-17T11:02:13+02:00",
+  "photo_url": "/media/reports/2026/10/103.jpg",
+  "is_synthetic": true,
+  "feedback_counts": {
+    "still_there": 0,
+    "resolved": 0,
+    "dispute": 0
+  }
+}
