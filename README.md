@@ -79,6 +79,9 @@ The app works without any key: photos get a sample AI answer. To use the real AI
 
 4. Stop the app (Ctrl+C) and start it again with `make run`.
 
+Optional: answers are faster with `GEMINI_THINKING_LEVEL=low` in `.env` (Gemini 3 models only;
+leave it empty for other models). Run `make ai-smoke` again after changing it.
+
 Never share or commit the `.env` file: it holds your key.
 
 On the free tier Google may use the photos you send to improve its products, so don't upload

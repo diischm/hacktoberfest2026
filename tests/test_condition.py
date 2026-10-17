@@ -10,8 +10,15 @@ from reports.models import Report
 NOW = datetime(2026, 10, 17, 12, 0, tzinfo=ZoneInfo("Europe/Skopje"))
 
 
-def report(hazard="pothole_damage", status="unverified", age=timedelta(hours=1), confirmed=None):
+def report(
+    hazard="pothole_damage",
+    status="unverified",
+    age=timedelta(hours=1),
+    confirmed=None,
+    needs_review=False,
+):
     return Report(
+        needs_review=needs_review,
         lat=41.99,
         lng=21.43,
         hazard_type=hazard,
@@ -40,6 +47,9 @@ def report(hazard="pothole_damage", status="unverified", age=timedelta(hours=1),
         ({"status": "unverified"}, "amber"),
         ({"status": "ai_flagged", "hazard": "other"}, "amber"),
         ({"status": "disputed"}, "amber"),
+        # Contract E5: an AI failure / unsure answer is shown grey ("needs review").
+        ({"status": "ai_flagged", "hazard": "other", "needs_review": True}, "grey"),
+        ({"status": "resolved", "needs_review": True}, "green"),
     ],
 )
 def test_compute_condition_placeholder_rules(kwargs, expected):

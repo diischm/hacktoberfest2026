@@ -7,6 +7,7 @@ exponential decay) but keeps the two function signatures.
 Placeholder rules, checked top to bottom (first match wins):
 
 1. verification_status == resolved                        -> green
+1b. needs_review (AI failed or unsure)                     -> grey  (contract, E5)
 2. last confirmed (or created) more than 14 days ago      -> grey  (stale, we don't know)
 3. hazard_type is not a hazard (none, informal_shortcut)  -> green
 4. status verified or community_confirmed                 -> red   (confirmed hazard)
@@ -28,6 +29,8 @@ CONFIRMED_STATUSES = frozenset(
 def compute_condition(report, now: datetime) -> str:
     if report.verification_status == VerificationStatus.RESOLVED:
         return Condition.GREEN
+    if report.needs_review:
+        return Condition.GREY
     last_seen = report.last_confirmed_at or report.created_at
     if now - last_seen > STALE_AFTER:
         return Condition.GREY

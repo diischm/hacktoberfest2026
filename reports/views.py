@@ -1,23 +1,35 @@
 """
-Read-only report API: E2 meta, E3 list (GeoJSON), E4 detail.
+Report API: E2 meta, E3 list (GeoJSON), E4 detail, E5 create.
 
-`APIView` is DRF's class-based view: a `get()` method handles GET, other methods get a 405.
-Errors are raised as exceptions and turned into the contract shape by config/exceptions.py.
+`APIView` is DRF's class-based view: a `get()` method handles GET, `post()` handles POST, other
+methods get a 405. Errors are raised as exceptions and turned into the contract shape by
+config/exceptions.py.
 """
 
+import logging
 import math
+import uuid
 
+from django.core.files.base import ContentFile
+from django.db import transaction
+from rest_framework import status
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from config.exceptions import InvalidBBox
-from reports.choices import VerificationStatus
+from ai.errors import AiRateLimited, AiUnavailable
+from ai.service import analyze_image
+from config.exceptions import AiRateLimitedError, InvalidBBox
+from reports.choices import HazardType, VerificationStatus
 from reports.limits import MAP_BOUNDS, MAX_REPORTS_PER_LIST
 from reports.meta import build_meta
 from reports.models import Report
-from reports.serializers import ReportSerializer
+from reports.permissions import CsrfForUnsafeMethods
+from reports.serializers import ReportSerializer, ReportUploadSerializer
+from reports.throttles import ReportUploadThrottle
+
+logger = logging.getLogger(__name__)
 
 
 class PublicReadView(APIView):
@@ -79,6 +91,20 @@ class MetaView(PublicReadView):
 
 
 class ReportListView(PublicReadView):
+    """GET = E3 list, POST = E5 create (same URL)."""
+
+    # POST: CSRF is checked even though users are anonymous (see reports/permissions.py).
+    # GET is a "safe" method, so it passes this check untouched.
+    permission_classes = (CsrfForUnsafeMethods,)
+
+    # How the request body is read ("parsed") into request.data is left at DRF's default:
+    # JSON, form and multipart. E5 sends multipart/form-data (text fields + a file); the file
+    # ends up in request.data["photo"] as an UploadedFile.
+
+    def get_throttles(self):
+        # Only uploads are limited; reading the map stays unlimited.
+        return [ReportUploadThrottle()] if self.request.method == "POST" else []
+
     def get(self, request):
         min_lng, min_lat, max_lng, max_lat = parse_bbox(request.query_params.get("bbox"))
         include_resolved = parse_bool(
@@ -106,6 +132,68 @@ class ReportListView(PublicReadView):
                 "features": [report_feature(item) for item in data],
             }
         )
+
+    def post(self, request):
+        upload = ReportUploadSerializer(data=request.data)
+        upload.is_valid(raise_exception=True)
+        data = upload.validated_data
+        jpeg = data["photo_jpeg"]
+
+        # Make sure this browser has a session (cookie "sessionid"), so the feedback endpoint can
+        # later recognise "the same browser" by its session key.
+        if request.session.session_key is None:
+            request.session.create()
+
+        report = Report(lat=data["lat"], lng=data["lng"], note=data["note"])
+        try:
+            result = analyze_image(jpeg, "image/jpeg", prepared=True)
+        except AiRateLimited as exc:
+            # Nothing has been written yet: no row, no file.
+            raise AiRateLimitedError(exc.retry_after_seconds) from None
+        except AiUnavailable as exc:
+            # Contract: AI failure still creates the report, flagged for review.
+            report.hazard_type = HazardType.OTHER
+            report.description = ""
+            report.ai_confidence = None
+            report.needs_review = True
+            report.verification_status = VerificationStatus.AI_FLAGGED
+            # exc.reason is a short fixed string written by us (ai/errors.py), safe to store.
+            report.ai_raw_response = {"error": exc.reason, "response": exc.raw_response}
+        else:
+            report.hazard_type = result.hazard_type
+            report.description = result.description
+            report.ai_confidence = result.confidence
+            report.needs_review = result.needs_review
+            report.verification_status = (
+                VerificationStatus.AI_FLAGGED
+                if result.needs_review
+                else VerificationStatus.UNVERIFIED
+            )
+            report.ai_raw_response = result.raw_response
+
+        _save_with_photo(report, jpeg)
+        return Response(ReportSerializer(report).data, status=status.HTTP_201_CREATED)
+
+
+def _save_with_photo(report, jpeg):
+    """
+    Write the photo file, then the database row. If the row fails, delete the file again, so no
+    orphan photo is left on disk.
+
+    `transaction.atomic()` means "all database writes in this block happen, or none do". There is
+    only one write today, but it keeps the rule true if more are added (e.g. an audit row).
+    The file system isn't part of the transaction, hence the manual delete.
+    """
+    # Random name: doesn't reveal the report id or the upload order. upload_to on the model adds
+    # the dated folder: reports/<year>/<month>/<uuid>.jpg
+    report.photo.save(f"{uuid.uuid4().hex}.jpg", ContentFile(jpeg), save=False)
+    try:
+        with transaction.atomic():
+            report.save()
+    except Exception:
+        report.photo.delete(save=False)
+        logger.error("Saving a new report failed; removed its photo file.")
+        raise
 
 
 class ReportDetailView(PublicReadView):

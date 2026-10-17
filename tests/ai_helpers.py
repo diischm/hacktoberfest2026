@@ -33,13 +33,29 @@ def gemini_response(text: str) -> types.GenerateContentResponse:
     )
 
 
+class FakeClock:
+    """Replaces time.monotonic/time.sleep in ai.gemini: time only moves when we say so."""
+
+    def __init__(self):
+        self.now = 1000.0
+
+    def monotonic(self):
+        return self.now
+
+    def sleep(self, seconds):
+        self.now += seconds
+
+
 class FakeModels:
-    def __init__(self, outcomes):
+    def __init__(self, outcomes, on_call=None):
         self.outcomes = list(outcomes)
         self.calls = []
+        self.on_call = on_call
 
     def generate_content(self, **kwargs):
         self.calls.append(kwargs)
+        if self.on_call:
+            self.on_call()
         outcome = self.outcomes.pop(0)
         if isinstance(outcome, BaseException):
             raise outcome
@@ -49,5 +65,5 @@ class FakeModels:
 class FakeClient:
     """Stands in for genai.Client: each call returns (or raises) the next outcome."""
 
-    def __init__(self, *outcomes):
-        self.models = FakeModels(outcomes)
+    def __init__(self, *outcomes, on_call=None):
+        self.models = FakeModels(outcomes, on_call)

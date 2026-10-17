@@ -8,6 +8,10 @@ A DRF *serializer* converts model instances to plain dicts (and, for input, vali
 from django.utils import timezone
 from rest_framework import serializers
 
+from ai.errors import AiUnavailable
+from ai.image import detect_mime_type, prepare_image
+from config.exceptions import PhotoTooLarge, UnsupportedPhotoType
+from reports import limits
 from reports.condition import compute_condition, compute_freshness
 from reports.models import Report
 
@@ -75,3 +79,50 @@ class ReportSerializer(serializers.ModelSerializer):
 
     def get_feedback_counts(self, obj):
         return obj.feedback_counts
+
+
+class ReportUploadSerializer(serializers.Serializer):
+    """
+    Input for POST /api/reports/ (E5). Used only to validate; the response is ReportSerializer.
+
+    Photo problems are not 400s: too large -> 413, not a JPEG/PNG/WebP -> 415 (contract). Those
+    are raised as their own exceptions, which DRF lets through is_valid() instead of collecting
+    them as field errors.
+    """
+
+    photo = serializers.FileField()
+    lat = serializers.FloatField(min_value=-90, max_value=90)
+    lng = serializers.FloatField(min_value=-180, max_value=180)
+    note = serializers.CharField(
+        required=False, allow_blank=True, max_length=limits.MAX_NOTE_LENGTH, default=""
+    )
+
+    def validate_photo(self, photo):
+        if photo.size > limits.MAX_PHOTO_BYTES:
+            raise PhotoTooLarge()
+        if detect_mime_type(photo.read()) not in limits.ACCEPTED_PHOTO_TYPES:
+            raise UnsupportedPhotoType()
+        return photo
+
+    def validate_lat(self, value):
+        bounds = limits.MAP_BOUNDS
+        if not bounds["min_lat"] <= value <= bounds["max_lat"]:
+            raise serializers.ValidationError("Location is outside the map area.")
+        return value
+
+    def validate_lng(self, value):
+        bounds = limits.MAP_BOUNDS
+        if not bounds["min_lng"] <= value <= bounds["max_lng"]:
+            raise serializers.ValidationError("Location is outside the map area.")
+        return value
+
+    def validate(self, attrs):
+        # Only reached when every field is valid, so a bad lat doesn't cost an image resize.
+        # This JPEG (no EXIF/GPS, resized) is what Gemini sees AND what we store: the original
+        # upload bytes are never saved.
+        attrs["photo"].seek(0)
+        try:
+            attrs["photo_jpeg"] = prepare_image(attrs["photo"].read())
+        except AiUnavailable:  # Pillow could read the header but not the pixels
+            raise UnsupportedPhotoType() from None
+        return attrs
