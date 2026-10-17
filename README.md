@@ -68,12 +68,21 @@ The app works without any key: photos get a sample AI answer. To use the real AI
    ```
    AI_MODE=live
    GEMINI_API_KEY=your-key-here
-   GEMINI_MODEL=gemini-2.5-flash
+   GEMINI_MODEL=gemini-3.8-flash
    ```
 
-3. Stop the app (Ctrl+C) and start it again with `make run`.
+3. Check it works (this sends the photo to Google once):
+
+   ```bash
+   make ai-smoke IMG=path/to/photo.jpg
+   ```
+
+4. Stop the app (Ctrl+C) and start it again with `make run`.
 
 Never share or commit the `.env` file: it holds your key.
+
+On the free tier Google may use the photos you send to improve its products, so don't upload
+photos where people can be recognised.
 
 ## Open it on your phone
 

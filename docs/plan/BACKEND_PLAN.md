@@ -59,13 +59,13 @@ After each merge, send the message from [WORKFLOW.md](WORKFLOW.md#communication)
 
 ### 3. `feat/gemini-analysis`
 
-- **Goal:** `ai` app service: `analyze_photo(bytes, mime) -> AnalysisResult | raises AIRateLimited / AIError`.
+- **Goal:** `ai` app service: `analyze_image(bytes, mime) -> AnalysisResult | raises AiRateLimited / AiUnavailable`.
 - **Details:** adds **google-genai** (Google's official Gemini SDK). Model from
   `settings.GEMINI_MODEL`, key from `settings.GEMINI_API_KEY`, never logged. Structured JSON
-  output with `hazard_type` enum. Timeout ~12 s. `AI_MODE=mock` → deterministic fake result
+  output with `hazard_type` enum. Timeout ~15 s. `AI_MODE=mock` → deterministic fake result
   (chosen from a hash of the photo bytes), no network. Free-tier 429 → `AIRateLimited`.
 - **Live:** none (internal).
-- **Done when:** unit tests for mock mode, response validation (bad JSON / unknown enum → `AIError`),
+- **Done when:** unit tests for mock mode, response validation (bad JSON → `AiUnavailable`, unknown enum → `other` + needs_review),
   and a test proving no live client is created under test settings. One manual live run documented in the PR.
 - **Frontend can switch from mock to live for:** none.
 
@@ -74,8 +74,10 @@ After each merge, send the message from [WORKFLOW.md](WORKFLOW.md#communication)
 - **Goal:** create reports from photos.
 - **Live:** [E5 create](API_CONTRACT.md#e5-create-report).
 - **Details:** validate type (by content via Pillow, not just extension), size ≤ 10 MB, bounds,
-  note length. Re-save image without EXIF. Call `analyze_photo`; on `AIError` → create with
-  `needs_review=true`, `ai_flagged`, `grey`; on `AIRateLimited` → 429, nothing saved.
+  note length. Re-save image without EXIF (`ai.image.prepare_image` can be reused). Call
+  `analyze_image`; on `AiUnavailable` → create with `needs_review=true`, `ai_flagged`, `grey`;
+  on `AiRateLimited` → 429, nothing saved. Store `result.raw_response` (or
+  `exc.raw_response`) in `Report.ai_raw_response`.
   CSRF enforced for this endpoint even though users are anonymous.
 - **Done when:** tests for 201 (mock AI), AI failure → 201 flagged, rate limit → 429 no row,
   413, 415, 400 cases, missing CSRF → 403 `csrf_failed`.

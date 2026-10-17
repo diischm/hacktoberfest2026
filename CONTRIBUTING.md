@@ -34,6 +34,16 @@ The Makefile uses `.venv/bin/` tools when the venv exists, so activating it is o
   [Google AI Studio](https://aistudio.google.com) -> "Get API key", put it in `.env` as
   `GEMINI_API_KEY`, and set `GEMINI_MODEL`. The free tier is rate-limited, so leave
   `AI_MODE=mock` unless you're testing the AI. Tests and CI always use mock.
+- **AI photo analysis** lives in the `ai` app; the rest of the app only calls
+  `ai.service.analyze_image(bytes, mime_type)`, which returns an `AnalysisResult` or raises
+  `AiRateLimited` / `AiUnavailable` (`ai/errors.py`). Prompt text: `ai/prompt.py` (bump
+  `PROMPT_VERSION` when you change it). Thresholds for `needs_review`: `ai/schema.py`.
+- **Try the AI on one photo:** `make ai-smoke IMG=path/to/photo.jpg` prints the result as JSON
+  and which mode was used. In live mode it makes one real API call (uses free-tier quota), so
+  never run it in tests or CI. `python manage.py ai_smoke --raw <img>` also prints the full
+  model answer.
+- **Error screens without a key:** in mock mode set `AI_MOCK_FORCE=rate_limited` or
+  `AI_MOCK_FORCE=unavailable` in `.env` to make every analysis fail that way.
 - **Phone testing:** `make run` listens on `0.0.0.0:8000`; add the laptop's LAN IP to
   `DJANGO_ALLOWED_HOSTS` in `.env`. Health check: `http://localhost:8000/api/health/`.
 - **Demo reports:** `make loaddemo` loads `reports/fixtures/demo_reports.json`: 11 synthetic
