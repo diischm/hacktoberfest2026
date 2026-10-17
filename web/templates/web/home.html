@@ -34,6 +34,17 @@
         <label class="check"><input type="checkbox" id="show-demo" checked><span class="box" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M4 11 L8 15 L16 4"/></svg></span>Demo data</label>
       </fieldset>
       <fieldset class="layers__group">
+        <legend>Bike network</legend>
+        <label class="check"><input type="checkbox" id="show-lanes" checked><span class="box" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M4 11 L8 15 L16 4"/></svg></span>Bike lanes</label>
+        <label class="check"><input type="checkbox" id="show-parking" checked><span class="box" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M4 11 L8 15 L16 4"/></svg></span>Bicycle parking</label>
+        <p class="key__note muted">Existing lanes and parking from OpenStreetMap.</p>
+      </fieldset>
+      <fieldset class="layers__group" id="layer-basemap">
+        <legend>Map background</legend>
+        <label class="check check--radio"><input type="radio" name="basemap" id="basemap-standard" checked><span class="box" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M4 11 L8 15 L16 4"/></svg></span>Standard</label>
+        <label class="check check--radio"><input type="radio" name="basemap" id="basemap-cycle"><span class="box" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M4 11 L8 15 L16 4"/></svg></span>Cycle map</label>
+      </fieldset>
+      <fieldset class="layers__group">
         <legend>Key</legend>
         <ul class="key" id="layers-key"></ul>
         <p class="key__note muted">Dashed ring = demo data. Faded = older report. Round pin = information, not a hazard.</p>

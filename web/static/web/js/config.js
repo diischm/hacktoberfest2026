@@ -8,7 +8,8 @@ export const API_MODE = {
   reportDetail: "live", // M1
   createReport: "live", // M2
   feedback: "mock", // M3
-  segments: "mock", // M4
+  segments: "live", // existing bike lanes from OpenStreetMap (E7)
+  bikeParking: "live", // existing bicycle parking from OpenStreetMap (E10)
   scenarios: "mock", // M4
   compare: "mock", // M4
 };
@@ -36,6 +37,19 @@ export const TILE_LAYER = {
     referrerPolicy: "strict-origin-when-cross-origin",
     attribution:
       '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  },
+};
+
+// Cycling basemap (CyclOSM): the same OSM data rendered for bikes — cycleways, paths and
+// bicycle parking are drawn on the tiles. Offered as a second choice in the Layers panel.
+export const CYCLE_TILE_LAYER = {
+  url: "https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png",
+  options: {
+    maxZoom: 20,
+    subdomains: "abc",
+    referrerPolicy: "strict-origin-when-cross-origin",
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="https://www.cyclosm.org">CyclOSM</a>',
   },
 };
 

@@ -1,0 +1,25 @@
+{
+  "type": "FeatureCollection",
+  "osm_timestamp": "2026-10-17T14:11:06Z",
+  "features": [
+    {
+      "type": "Feature",
+      "id": 3508366301,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          21.392381,
+          42.003979
+        ]
+      },
+      "properties": {
+        "id": 3508366301,
+        "name": "",
+        "capacity": null,
+        "covered": false,
+        "parking": "",
+        "access": ""
+      }
+    }
+  ]
+}

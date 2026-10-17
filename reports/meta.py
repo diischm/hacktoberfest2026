@@ -2,17 +2,22 @@
 
 from reports import limits
 from reports.choices import (
+    BIKE_PARKING_HEX,
     CONDITION_HEX,
     CONDITION_MEANINGS,
     HAZARD_ICONS,
     NOT_A_HAZARD,
+    SEGMENT_KIND_HEX,
+    SEGMENT_KIND_STYLE,
     Condition,
     FeedbackAction,
     HazardType,
+    SegmentKind,
     VerificationStatus,
 )
 
-CONTRACT_VERSION = 1
+# 2 adds `segment_kinds` and `bike_parking` (E7/E10), see docs/plan/API_CONTRACT.md#changelog.
+CONTRACT_VERSION = 2
 
 
 def build_meta() -> dict:
@@ -38,6 +43,16 @@ def build_meta() -> dict:
         ],
         "verification_statuses": [{"key": s.value, "label": s.label} for s in VerificationStatus],
         "feedback_actions": [{"key": a.value, "label": a.label} for a in FeedbackAction],
+        "segment_kinds": [
+            {
+                "key": k.value,
+                "label": k.label,
+                "hex": SEGMENT_KIND_HEX[k],
+                "line_style": SEGMENT_KIND_STYLE[k],
+            }
+            for k in SegmentKind
+        ],
+        "bike_parking": {"label": "Bicycle parking", "hex": BIKE_PARKING_HEX},
         "upload": {
             "max_photo_bytes": limits.MAX_PHOTO_BYTES,
             "accepted_types": list(limits.ACCEPTED_PHOTO_TYPES),
