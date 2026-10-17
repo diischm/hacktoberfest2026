@@ -4,3 +4,10 @@ djangorestframework==3.18.3
 python-dotenv==1.2.4
 # Image library: Django's ImageField needs it to check that an upload really is an image.
 pillow==13.0.0
+# Google's official SDK for the Gemini API (free-tier key from Google AI Studio). Used by ai/gemini.py.
+google-genai==2.31.0
+# Data validation library (comes with google-genai). ai/schema.py uses it directly to check the
+# AI's answer, so it's pinned here too.
+pydantic==2.14.1
+# HTTP library (comes with google-genai). ai/gemini.py catches its timeout error, so it's pinned too.
+httpx==0.28.1

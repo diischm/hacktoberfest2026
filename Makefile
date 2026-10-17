@@ -3,7 +3,7 @@
 BIN := $(if $(wildcard .venv/bin/python),.venv/bin/,)
 PYTHON := $(BIN)python
 
-.PHONY: help install run migrate loaddemo superuser check lint security test django-check
+.PHONY: help install run migrate loaddemo superuser ai-smoke check lint security test django-check
 
 help:
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
@@ -24,6 +24,10 @@ loaddemo: ## Load synthetic demo reports (ids 9001+, no photos); safe to re-run
 
 superuser: ## Create an admin login for /admin/
 	$(PYTHON) manage.py createsuperuser
+
+ai-smoke: ## Analyze one photo and print the result: make ai-smoke IMG=photo.jpg (live = 1 real call)
+	@test -n "$(IMG)" || { echo "Usage: make ai-smoke IMG=path/to/photo.jpg"; exit 1; }
+	$(PYTHON) manage.py ai_smoke "$(IMG)"
 
 check: lint security django-check test ## Run everything CI runs (except gitleaks: that's in pre-commit)
 

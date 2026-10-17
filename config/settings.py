@@ -136,3 +136,6 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "")
 # "mock" unless explicitly set to "live" AND a key + model are present.
 AI_MODE = resolve_ai_mode(os.getenv("AI_MODE", "mock"), GEMINI_API_KEY, GEMINI_MODEL)
+# Mock mode only: "rate_limited" or "unavailable" makes every analysis fail that way, to try
+# the error screens without a key. Empty = normal mock answers.
+AI_MOCK_FORCE = os.getenv("AI_MOCK_FORCE", "").strip().lower()
