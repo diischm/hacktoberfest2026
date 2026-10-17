@@ -23,7 +23,6 @@ synthetic.
 
 ## What you need
 
-- Linux or macOS
 - git
 - Python 3.12
 - make
