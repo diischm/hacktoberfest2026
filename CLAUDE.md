@@ -17,6 +17,9 @@ templates + Leaflet + vanilla JS, no build step). `AI_MODE=mock` by default.
 - Never edit or delete the other side's tests; ask them first.
 - For UI work, follow docs/design/README.md and the mockups in docs/design/.
 - Run `make check` before finishing; it must be green.
+- If a change affects how to install, configure or run the app (new Makefile
+  target, new .env variable, new step), update README.md in the same branch, in the
+  same plain style.
 - Never commit secrets or `.env`. Only `.env.example` with placeholders.
 - Tests and CI never call the real Gemini API.
 - Do not commit or push unless explicitly asked.
