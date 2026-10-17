@@ -9,7 +9,7 @@ MAP_JS = (ROOT / "web" / "static" / "web" / "js" / "map.js").read_text()
 
 @pytest.fixture
 def home(client):
-    return client.get("/")
+    return client.get("/map/")
 
 
 def test_map_page_renders_with_brand_and_viewport(home):

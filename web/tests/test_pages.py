@@ -2,7 +2,7 @@ import pytest
 from django.urls import reverse
 
 
-@pytest.mark.parametrize("name", ["web:home", "web:report", "web:routes"])
+@pytest.mark.parametrize("name", ["web:home", "web:map", "web:report", "web:routes"])
 def test_page_renders(client, name):
     response = client.get(reverse(name))
 
@@ -17,7 +17,7 @@ def test_home_is_root_with_brand_and_viewport(client):
     assert b'name="viewport"' in response.content
 
 
-@pytest.mark.parametrize("name", ["web:home", "web:report", "web:routes"])
+@pytest.mark.parametrize("name", ["web:home", "web:map", "web:report", "web:routes"])
 def test_page_links_stylesheet(client, name):
     response = client.get(reverse(name))
 
@@ -44,3 +44,27 @@ def test_routes_js_is_safe_and_reads_colors_from_meta():
     for hex_color in ("#2E7D32", "#F9A825", "#C62828", "#757575"):
         assert hex_color.lower() not in js.lower()
     assert "TILE_LAYER.url, TILE_LAYER.options" in js
+
+
+def test_landing_links_to_every_page(client):
+    content = client.get("/").content
+
+    assert b'id="collage"' in content
+    assert b'type="module" src="/static/web/js/landing.js"' in content
+    for path in (b'href="/map/"', b'href="/report/"', b'href="/routes/"'):
+        assert path in content
+
+
+def test_old_report_links_redirect_to_the_map(client):
+    response = client.get("/?report=9001")
+
+    assert response.status_code == 302
+    assert response["Location"] == "/map/?report=9001"
+
+
+def test_landing_js_is_safe():
+    from pathlib import Path
+
+    js = (Path(__file__).resolve().parents[1] / "static" / "web" / "js" / "landing.js").read_text()
+    assert "innerHTML" not in js
+    assert "insertAdjacentHTML" not in js

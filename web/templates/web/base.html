@@ -59,7 +59,7 @@
 
   {% with current=request.resolver_match.url_name %}
   <nav class="bottom-nav" aria-label="Main">
-    <a class="bottom-nav__item" href="{% url 'web:home' %}"{% if current == "home" %} aria-current="page"{% endif %}>
+    <a class="bottom-nav__item" href="{% url 'web:map' %}"{% if current == "map" %} aria-current="page"{% endif %}>
       <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>
       <span>Map</span>
     </a>

@@ -168,7 +168,7 @@ function hazardPin(feature) {
   });
   // Tapping a pin opens the report on the main map.
   marker.on("click", () => {
-    window.location.href = `/?report=${encodeURIComponent(p.id)}`;
+    window.location.href = `/map/?report=${encodeURIComponent(p.id)}`;
   });
   return marker;
 }

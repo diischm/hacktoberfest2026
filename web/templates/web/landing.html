@@ -1,0 +1,156 @@
+{% extends "web/base.html" %}
+{% load static %}
+
+{% block title %}BikeAble · Ride around the mess{% endblock %}
+
+{% block content %}
+{# Intro: a bike rides across a paper strip. First visit per session only; tap to skip. #}
+<div class="loader" id="loader" role="status" aria-live="polite" hidden>
+  <div class="loader__strip">
+    <svg class="loader__clouds" viewBox="0 0 600 120" aria-hidden="true">
+      <g class="cloud cloud--a"><circle cx="80" cy="40" r="16"/><circle cx="100" cy="32" r="20"/><circle cx="124" cy="40" r="15"/><rect x="72" y="40" width="64" height="14" rx="7"/></g>
+      <g class="cloud cloud--b"><circle cx="420" cy="30" r="12"/><circle cx="436" cy="24" r="16"/><circle cx="455" cy="31" r="11"/><rect x="412" y="30" width="52" height="11" rx="5.5"/></g>
+    </svg>
+    <div class="loader__rider">
+      <svg class="bike" viewBox="0 0 132 84" aria-hidden="true"><use href="#bike-shape"/></svg>
+      <span class="loader__dust" aria-hidden="true"><i></i><i></i><i></i></span>
+    </div>
+    <svg class="loader__road" viewBox="0 0 600 14" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 7 Q 40 3 80 7 T 160 7 T 240 7 T 320 7 T 400 7 T 480 7 T 560 7 T 640 7"/>
+    </svg>
+  </div>
+  <p class="loader__msg"><span id="loader-msg">Pumping the tyres</span><span class="loader__dots" aria-hidden="true"></span></p>
+</div>
+{# Decide before first paint, so the page never flashes under the intro. landing.js runs it. #}
+<script>
+  try {
+    if (!sessionStorage.getItem("bikeable-intro-seen") && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      document.getElementById("loader").hidden = false;
+    }
+  } catch (e) {}
+</script>
+
+<section class="landing is-entering" id="landing" aria-labelledby="home-title">
+  <div class="board-tools">
+    <button class="pill" id="replay-btn" type="button">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8a5 5 0 1 0 1.6-3.7" fill="none" stroke-width="1.8"/><path d="M2 2v4h4z"/></svg>
+      <span>Replay intro</span>
+    </button>
+    <button class="pill" id="organize-btn" type="button" aria-pressed="false">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+      <span>Organize</span>
+    </button>
+  </div>
+
+  <div class="collage" id="collage">
+    <article class="piece piece--note kraft torn" data-piece style="--i:0;--r:-2.5deg">
+      <span class="tape tape--tl" aria-hidden="true"></span>
+      <h1 id="home-title" class="hand hero-title">Ride around the mess.</h1>
+      <p class="lede">BikeAble maps blocked lanes, parked cars and potholes in Skopje from photos riders send in. Snap a hazard, the AI reads it, the next rider sees it coming.</p>
+      <div class="actions">
+        <a class="btn btn--ink" href="{% url 'web:map' %}">Open the map <span aria-hidden="true">&rarr;</span></a>
+        <a class="btn btn--line" href="{% url 'web:report' %}">Report a hazard</a>
+      </div>
+    </article>
+
+    <figure class="piece piece--scene" data-piece style="--i:1;--r:2deg">
+      <span class="tape tape--tr" aria-hidden="true"></span>
+      <svg class="scene" viewBox="0 0 400 300" role="img" aria-label="A bicycle parked on a cloud above Vodno, with a ladder down to the grass">
+        <defs>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="sky-top"/><stop offset="1" class="sky-low"/></linearGradient>
+        </defs>
+        <rect width="400" height="300" fill="url(#sky)"/>
+        <circle cx="62" cy="48" r="16" class="moon"/>
+        <g class="scene__drift scene__drift--a"><circle cx="320" cy="60" r="10"/><circle cx="334" cy="54" r="13"/><circle cx="349" cy="61" r="9"/><rect x="312" y="60" width="44" height="9" rx="4.5"/></g>
+        <g class="scene__drift scene__drift--b"><circle cx="110" cy="96" r="7"/><circle cx="120" cy="91" r="9"/><circle cx="131" cy="97" r="6"/><rect x="104" y="96" width="32" height="7" rx="3.5"/></g>
+        <path class="mtn mtn--far" d="M0 230 L48 186 L82 206 L130 160 L176 204 L214 182 L262 214 L300 170 L346 206 L400 188 L400 300 L0 300 Z"/>
+        <path class="mtn" d="M0 250 L70 214 L110 232 L168 196 L240 240 L300 216 L360 240 L400 226 L400 300 L0 300 Z"/>
+        <path class="grass" d="M0 262 Q 100 248 200 258 T 400 254 L400 300 L0 300 Z"/>
+        <g class="scene__float">
+          <g class="scene__ladder">
+            <path d="M226 160 L234 270 M250 160 L258 270"/>
+            <path d="M228 178 L250 178 M229 196 L251 196 M230 214 L252 214 M232 232 L254 232 M233 250 L255 250"/>
+          </g>
+          <g class="scene__cloud">
+            <circle cx="150" cy="150" r="30"/><circle cx="190" cy="128" r="38"/><circle cx="238" cy="132" r="34"/><circle cx="276" cy="152" r="26"/>
+            <rect x="130" y="146" width="168" height="30" rx="15"/>
+          </g>
+          <svg x="160" y="62" width="110" height="70" viewBox="0 0 132 84" class="scene__bike"><use href="#bike-shape"/></svg>
+        </g>
+        <text x="20" y="286" class="scene__label">VODNO, 41.97&deg;N</text>
+      </svg>
+      <figcaption class="hand">Skopje, from above the traffic</figcaption>
+    </figure>
+
+    <aside class="piece piece--receipt receipt" data-piece style="--i:2;--r:-1deg" aria-labelledby="receipt-title">
+      <header class="receipt__head">
+        <span id="receipt-title">TODAY ON THE MAP</span>
+        <span id="receipt-date">--.--.----</span>
+      </header>
+      <ul class="receipt__rows" id="receipt-rows">
+        <li><span>Active reports</span><b>&mdash;</b></li>
+      </ul>
+      <p class="receipt__foot" id="receipt-demo"></p>
+      <a class="receipt__link" href="{% url 'web:map' %}">&rarr; Open the live map</a>
+    </aside>
+
+    <aside class="piece piece--sticky sticky" data-piece style="--i:3;--r:3deg" aria-label="How it works">
+      <h2 class="hand">Today:</h2>
+      <ul class="checklist" id="checklist">
+        <li class="is-done"><span class="box" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M4 11 L8 15 L16 4"/></svg></span>Snap the hazard</li>
+        <li class="is-done"><span class="box" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M4 11 L8 15 L16 4"/></svg></span>Tap where it is</li>
+        <li><span class="box" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M4 11 L8 15 L16 4"/></svg></span>Let the AI read it</li>
+        <li><span class="box" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M4 11 L8 15 L16 4"/></svg></span>Warn the next rider</li>
+      </ul>
+    </aside>
+
+    <a class="piece piece--ticket ticket" href="{% url 'web:routes' %}" data-piece style="--i:4;--r:-3deg">
+      <span class="ticket__stub" aria-hidden="true">ROUTE</span>
+      <span class="ticket__body">
+        <span class="ticket__label">Best way today</span>
+        <strong class="ticket__route" id="ticket-route">Compare routes</strong>
+        <span class="ticket__meta" id="ticket-meta">Loading routes…</span>
+      </span>
+    </a>
+
+    <span class="piece piece--sticker sticker sticker--round" data-piece style="--i:5;--r:-12deg" aria-hidden="true">
+      <svg viewBox="0 0 120 120"><defs><path id="ring" d="M60 60 m-44 0 a44 44 0 1 1 88 0 a44 44 0 1 1 -88 0"/></defs>
+        <text><textPath href="#ring">FIX MY CITY &middot; FIX MY CITY &middot; FIX MY CITY &middot;</textPath></text>
+        <use href="#bike-shape" transform="translate(28 40) scale(.48)"/>
+      </svg>
+    </span>
+
+    <span class="piece piece--stamp stamp" data-piece style="--i:6;--r:9deg" aria-hidden="true">AI&nbsp;READ</span>
+
+    <span class="piece piece--cone sticker" data-piece style="--i:7;--r:6deg" aria-hidden="true">
+      <svg viewBox="0 0 64 64"><path class="cone" d="M26 10 L38 10 L50 50 L14 50 Z"/><path class="cone-band" d="M22 24 L42 24 L45 34 L19 34 Z"/><rect x="8" y="50" width="48" height="6" rx="2" class="cone-base"/></svg>
+    </span>
+  </div>
+
+  <h2 class="hand doors__title">Where to?</h2>
+  <nav class="doors" aria-label="Start here">
+    <a class="door door--paper" href="{% url 'web:map' %}" style="--i:0;--r:-3deg">
+      <span class="door__tab">Map</span>
+      <svg class="door__doodle" viewBox="0 0 64 64" aria-hidden="true"><path d="M8 14 L24 8 L40 14 L56 8 L56 50 L40 56 L24 50 L8 56 Z M24 8 L24 50 M40 14 L40 56"/><circle cx="46" cy="28" r="5" class="fill-accent"/></svg>
+      <strong>Hazard map</strong>
+      <span>See what riders reported around the centre, plus the real bike lanes.</span>
+    </a>
+    <a class="door door--kraft" href="{% url 'web:report' %}" style="--i:1;--r:2.5deg">
+      <span class="door__tab">Report</span>
+      <svg class="door__doodle" viewBox="0 0 64 64" aria-hidden="true"><rect x="8" y="18" width="48" height="34" rx="4"/><circle cx="32" cy="35" r="10"/><path d="M22 18 L26 11 L38 11 L42 18"/><circle cx="32" cy="35" r="4" class="fill-accent"/></svg>
+      <strong>Report a hazard</strong>
+      <span>Snap a photo, tap the map, done. The AI fills in the rest.</span>
+    </a>
+    <a class="door door--sticky" href="{% url 'web:routes' %}" style="--i:2;--r:-1.5deg">
+      <span class="door__tab">Routes</span>
+      <svg class="door__doodle" viewBox="0 0 64 64" aria-hidden="true"><circle cx="12" cy="50" r="5"/><circle cx="52" cy="14" r="5" class="fill-accent"/><path d="M15 46 C 30 44 20 26 34 24 S 44 18 48 16" stroke-dasharray="4 4"/><path d="M16 50 C 40 52 50 34 52 19"/></svg>
+      <strong>Compare routes</strong>
+      <span>Two ways across town, scored on today&rsquo;s reports.</span>
+    </a>
+  </nav>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="{% static 'web/js/landing.js' %}"></script>
+{% endblock %}

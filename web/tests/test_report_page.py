@@ -65,7 +65,7 @@ def test_report_page_loads_leaflet_once_and_its_script(page):
 def test_leaflet_tags_live_in_one_partial():
     # One copy of the pinned URLs + SRI hashes, shared by every map page.
     templates = ROOT / "web" / "templates" / "web"
-    for name in ("home.html", "report.html"):
+    for name in ("map.html", "report.html", "routes.html"):
         assert "unpkg.com/leaflet" not in (templates / name).read_text()
 
 
@@ -92,8 +92,8 @@ def test_report_js_takes_condition_colors_from_meta():
 
 
 def test_map_js_opens_a_linked_report():
-    # "See it on the map" links to /?report=<id>; map.js must read that parameter.
+    # "See it on the map" links to /map/?report=<id>; map.js must read that parameter.
     map_js = (JS / "map.js").read_text()
 
     assert 'get("report")' in map_js
-    assert "/?report=" in REPORT_JS
+    assert "/map/?report=" in REPORT_JS

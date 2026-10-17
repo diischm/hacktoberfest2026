@@ -459,7 +459,7 @@ function showResult(r) {
   const confidence = r.ai_confidence == null ? "Not analysed" : `${Math.round(r.ai_confidence * 100)}%`;
   el.resultFacts.replaceChildren(h("dt", {}, "AI sure"), h("dd", {}, confidence));
 
-  el.resultView.href = `/?report=${encodeURIComponent(r.id)}`;
+  el.resultView.href = `/map/?report=${encodeURIComponent(r.id)}`;
   el.form.hidden = true;
   el.result.hidden = false;
   window.scrollTo({ top: 0 });
