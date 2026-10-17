@@ -3,7 +3,7 @@
 BIN := $(if $(wildcard .venv/bin/python),.venv/bin/,)
 PYTHON := $(BIN)python
 
-.PHONY: help install run migrate superuser check lint security test django-check
+.PHONY: help install run migrate loaddemo superuser check lint security test django-check
 
 help:
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
@@ -18,6 +18,9 @@ run: ## Start dev server reachable from phones on the same Wi-Fi
 
 migrate: ## Apply database migrations
 	$(PYTHON) manage.py migrate
+
+loaddemo: ## Load synthetic demo reports (ids 9001+, no photos); safe to re-run
+	$(PYTHON) manage.py loaddata demo_reports
 
 superuser: ## Create an admin login for /admin/
 	$(PYTHON) manage.py createsuperuser
