@@ -93,7 +93,10 @@ Example: `merged feat/reports-api — contract v1 — frontend can now switch: E
 
 **Rule: if a PR would need to change a test owned by the other person, stop and ask them first.**
 
-### Home page (`/`)
+### Home page (`/`) — done
+
+Completed: frontend in `feat/web-skeleton`, backend in `chore/cleanup-home` (old home view,
+`templates/home.html` and the top-level `templates/` folder removed; `web/tests` added to `testpaths`).
 
 | Step | Who | What |
 |---|---|---|
