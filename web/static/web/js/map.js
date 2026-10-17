@@ -1,15 +1,20 @@
-// Map page ("/"): reports from E3 as pins, report detail sheet from E4.
+// Map page ("/"): reports from E3 as pins, report detail sheet from E4, existing bike lanes
+// from E7 and bicycle parking from E10 drawn as overlays.
 // Labels and condition colors come only from GET /api/meta/ (E2), never from this file.
 // API data is always inserted with textContent / text nodes, never as HTML.
 
-import { ApiError, getMeta, getReport, getReports } from "./api.js";
-import { TILE_LAYER } from "./config.js";
+import { ApiError, getBikeParking, getMeta, getReport, getReports, getSegments } from "./api.js";
+import { CYCLE_TILE_LAYER, TILE_LAYER } from "./config.js";
 
 const L = window.L; // Leaflet, loaded by a classic <script> before this module runs
 
 const RELOAD_DEBOUNCE_MS = 300;
 const FOCUS_ZOOM = 17; // zoom used when a link opens one report (/?report=<id>)
 const MIN_PIN_OPACITY = 0.55;
+// Neutral fallback when meta doesn't know a segment kind; real colors always come from meta.
+const FALLBACK_KIND_HEX = "#607D8B";
+// Line dash per meta's `segment_kinds[].line_style` (solid = unbroken, dotted = on-street).
+const LINE_DASH = { solid: null, dashed: "10 7", dotted: "1.5 7" };
 
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
@@ -22,6 +27,10 @@ const el = {
   layerTypes: $("#layer-types"),
   showResolved: $("#show-resolved"),
   showDemo: $("#show-demo"),
+  showLanes: $("#show-lanes"),
+  showParking: $("#show-parking"),
+  basemapStandard: $("#basemap-standard"),
+  basemapCycle: $("#basemap-cycle"),
   layersKey: $("#layers-key"),
   legendKey: $("#legend-key"),
   loading: $("#map-loading"),
@@ -51,6 +60,13 @@ const state = {
   hazards: new Map(), // key -> meta.hazard_types item
   conditions: new Map(), // key -> meta.conditions item
   statuses: new Map(), // key -> label
+  segmentKinds: new Map(), // key -> meta.segment_kinds item (E7 line color/style)
+  bikeParking: { label: "Bicycle parking", hex: FALLBACK_KIND_HEX }, // meta.bike_parking (E10)
+  segments: null, // last E7 FeatureCollection
+  parking: null, // last E10 FeatureCollection
+  showLanes: true,
+  showParking: true,
+  bikeError: null, // set when E7/E10 failed; reports keep working
   data: null, // last E3 FeatureCollection
   hiddenTypes: new Set(),
   showDemo: true,
@@ -63,6 +79,10 @@ const state = {
 
 let map = null;
 let reportLayer = null;
+let laneLayer = null;
+let parkingLayer = null;
+let baseStandard = null;
+let baseCycle = null;
 let retryAction = null;
 
 // --- Small DOM helpers -----------------------------------------------------------------
@@ -127,11 +147,25 @@ function statusLabel(key) {
   return state.statuses.get(key) || String(key);
 }
 
+function kindOf(key) {
+  return (
+    state.segmentKinds.get(key) || {
+      key: String(key),
+      label: String(key),
+      hex: FALLBACK_KIND_HEX,
+      line_style: "dotted",
+    }
+  );
+}
+
 function applyMeta(meta) {
   state.meta = meta;
   state.hazards = new Map(meta.hazard_types.map((t) => [t.key, t]));
   state.conditions = new Map(meta.conditions.map((c) => [c.key, c]));
   state.statuses = new Map(meta.verification_statuses.map((s) => [s.key, s.label]));
+  // Bike layers (E7/E10): colors, labels and dash styles also come from meta.
+  state.segmentKinds = new Map((meta.segment_kinds || []).map((k) => [k.key, k]));
+  if (meta.bike_parking) state.bikeParking = meta.bike_parking;
   // Condition colors: CSS uses var(--c-red) etc.; set them from meta so CSS follows the API.
   const root = document.documentElement.style;
   for (const c of meta.conditions) {
@@ -184,12 +218,22 @@ el.retry.addEventListener("click", () => {
 
 function renderNote(visibleCount) {
   const notes = [];
-  if (visibleCount === 0) {
-    notes.push(state.data.features.length ? "No reports match your layers." : "No reports here yet.");
+  if (state.bikeError) notes.push(state.bikeError);
+  if (state.data) {
+    if (visibleCount === 0) {
+      notes.push(
+        state.data.features.length ? "No reports match your layers." : "No reports here yet.",
+      );
+    }
+    if (state.data.truncated) notes.push("Showing the newest reports only. Zoom in to see all.");
   }
-  if (state.data.truncated) notes.push("Showing the newest reports only. Zoom in to see all.");
   el.note.textContent = notes.join(" ");
   el.note.hidden = notes.length === 0;
+}
+
+// Re-draw the note after something changed that isn't the report list (e.g. the bike layers failed).
+function refreshNote() {
+  renderNote(state.data ? state.data.features.filter(isVisible).length : 0);
 }
 
 // --- Map --------------------------------------------------------------------------------
@@ -205,11 +249,18 @@ function createMap() {
   );
   map.setMinZoom(map.getBoundsZoom(maxBounds, true));
   L.control.zoom({ position: "topright" }).addTo(map);
-  L.tileLayer(TILE_LAYER.url, TILE_LAYER.options).addTo(map);
+  // Two basemaps, only one visible at a time; the Layers panel switches between them.
+  baseStandard = L.tileLayer(TILE_LAYER.url, TILE_LAYER.options).addTo(map);
+  baseCycle = L.tileLayer(CYCLE_TILE_LAYER.url, CYCLE_TILE_LAYER.options);
 
   // A Leaflet "layer" is anything drawn on the map. L.geoJSON is one layer holding many
   // markers; it reads GeoJSON [lng, lat] and converts to Leaflet's [lat, lng] for us.
   reportLayer = L.geoJSON(null, { pointToLayer, filter: isVisible }).addTo(map);
+  // Existing bike network (E7 lines, E10 parking dots), drawn under the report pins.
+  laneLayer = L.geoJSON(null, { style: laneStyle, onEachFeature: onLane }).addTo(map);
+  parkingLayer = L.geoJSON(null, { pointToLayer: parkingMarker, onEachFeature: onParking }).addTo(
+    map,
+  );
 
   map.on("moveend", () => {
     updateReportHere();
@@ -270,6 +321,97 @@ function drawReports() {
   for (const f of visible) state.seenIds.add(f.properties.id);
   renderSummary(visible);
   renderNote(visible.length);
+}
+
+// --- Bike network (E7 lanes, E10 parking) -------------------------------------------------
+
+// One-off load for the whole demo area: the committed extract only covers Skopje, so re-querying
+// on every moveend would just re-send the same bbox.
+async function loadBikeLayers() {
+  const { min_lat, min_lng, max_lat, max_lng } = state.meta.map.bounds;
+  const bbox = [min_lng, min_lat, max_lng, max_lat].join(",");
+  try {
+    const [segments, parking] = await Promise.all([
+      getSegments({ bbox }),
+      getBikeParking({ bbox }),
+    ]);
+    state.segments = segments;
+    state.parking = parking;
+    state.bikeError = null;
+    drawBikeLayers();
+  } catch (err) {
+    if (!(err instanceof ApiError)) console.error(err);
+    // Not fatal: the report map keeps working, so say so in the note instead of the error box.
+    state.bikeError = "Bike lanes and parking couldn't be loaded. Reports still work.";
+    refreshNote();
+  }
+}
+
+function drawBikeLayers() {
+  if (!laneLayer) return;
+  laneLayer.clearLayers();
+  parkingLayer.clearLayers();
+  if (state.showLanes && state.segments) laneLayer.addData(state.segments);
+  if (state.showParking && state.parking) parkingLayer.addData(state.parking);
+}
+
+function setBasemap(which) {
+  const cycle = which === "cycle";
+  const want = cycle ? baseCycle : baseStandard;
+  const other = cycle ? baseStandard : baseCycle;
+  if (!map || map.hasLayer(want)) return;
+  if (map.hasLayer(other)) map.removeLayer(other);
+  want.addTo(map);
+}
+
+// laneStyle: meta's segment_kinds give each kind its color and its solid/dashed/dotted look.
+function laneStyle(feature) {
+  const kind = kindOf(feature.properties.kind);
+  return {
+    color: kind.hex,
+    weight: 4,
+    opacity: 0.9,
+    lineCap: "round",
+    lineJoin: "round",
+    dashArray: LINE_DASH[kind.line_style] ?? null,
+  };
+}
+
+// Tooltip content is a DOM element we build ourselves, so names from OSM can't inject markup.
+function tip(title, ...details) {
+  const line = details.filter(Boolean).join(" · ");
+  return h("div", { class: "tip" }, h("b", {}, title), line ? h("span", {}, line) : null);
+}
+
+function onLane(feature, layer) {
+  const p = feature.properties;
+  const kind = kindOf(p.kind);
+  const title = p.name || kind.label;
+  const facts = [];
+  if (p.name) facts.push(kind.label);
+  if (p.length_m != null) facts.push(`${Math.round(p.length_m)} m`);
+  if (p.condition && p.condition !== "green") facts.push(conditionOf(p.condition).label);
+  layer.bindTooltip(tip(title, ...facts), { sticky: true });
+}
+
+function parkingMarker(feature, latlng) {
+  return L.circleMarker(latlng, {
+    radius: 6,
+    weight: 2,
+    color: "#ffffff",
+    fillColor: state.bikeParking.hex,
+    fillOpacity: 0.9,
+  });
+}
+
+function onParking(feature, layer) {
+  const p = feature.properties;
+  const title = p.name || state.bikeParking.label;
+  const facts = [];
+  if (p.name) facts.push(state.bikeParking.label);
+  if (p.capacity) facts.push(`${p.capacity} spaces`);
+  if (p.covered === true) facts.push("Covered");
+  layer.bindTooltip(tip(title, ...facts), { sticky: true });
 }
 
 // Debounce: moveend fires after every drag/zoom. Wait until the map has been still for
@@ -333,6 +475,23 @@ function keyItems() {
   });
 }
 
+// Legend entries for the bike network: one line swatch per segment kind (color + dash from
+// meta) plus a dot for bicycle parking. Reused by the layers panel and the legend card.
+function bikeKeyItems() {
+  const kinds = state.meta.segment_kinds || [];
+  const items = kinds.map((k) => {
+    const sw = h("span", { class: "sw-line", "aria-hidden": "true" });
+    sw.style.borderTopColor = k.hex;
+    // LINE_DASH.solid is null, so unknown styles fall back to a solid line too.
+    sw.style.borderTopStyle = LINE_DASH[k.line_style] ? k.line_style : "solid";
+    return h("li", { title: k.label }, sw, k.label);
+  });
+  const dot = h("span", { class: "sw", "aria-hidden": "true" });
+  dot.style.setProperty("--c", state.bikeParking.hex);
+  items.push(h("li", { title: state.bikeParking.label }, dot, state.bikeParking.label));
+  return items;
+}
+
 // --- Layers panel -----------------------------------------------------------------------
 
 const CHECK_MARK = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M4 11 L8 15 L16 4"/></svg>';
@@ -356,8 +515,8 @@ function buildLayers() {
       }),
     );
   }
-  el.layersKey.replaceChildren(...keyItems());
-  el.legendKey.replaceChildren(...keyItems());
+  el.layersKey.replaceChildren(...keyItems(), ...bikeKeyItems());
+  el.legendKey.replaceChildren(...keyItems(), ...bikeKeyItems());
   el.layersBtn.disabled = false;
 }
 
@@ -369,6 +528,16 @@ el.showDemo.addEventListener("change", () => {
   state.showDemo = el.showDemo.checked;
   drawReports();
 });
+el.showLanes.addEventListener("change", () => {
+  state.showLanes = el.showLanes.checked;
+  drawBikeLayers();
+});
+el.showParking.addEventListener("change", () => {
+  state.showParking = el.showParking.checked;
+  drawBikeLayers();
+});
+el.basemapStandard.addEventListener("change", () => setBasemap("standard"));
+el.basemapCycle.addEventListener("change", () => setBasemap("cycle"));
 
 function toggleLayers(open = el.layers.hidden) {
   el.layers.hidden = !open;
@@ -596,6 +765,7 @@ async function init() {
   createMap();
   buildLayers();
   loadReports();
+  loadBikeLayers(); // E7 + E10, once for the whole demo area
   const linkedId = reportIdFromUrl();
   if (linkedId !== null) openDetail(linkedId, { pan: true });
 }

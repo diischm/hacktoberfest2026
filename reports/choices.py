@@ -45,6 +45,18 @@ class Condition(models.TextChoices):
     GREY = "grey", "Unknown"
 
 
+class SegmentKind(models.TextChoices):
+    """
+    Kind of one bike/road segment in GET /api/segments/ (E7), derived from OpenStreetMap tags
+    (reports/bike.py). Keys must match docs/plan/API_CONTRACT.md exactly.
+    """
+
+    BIKE_LANE = "bike_lane", "Bike lane or cycleway"
+    SHARED_PATH = "shared_path", "Shared path"
+    ROAD = "road", "On-street (no lane)"
+    INFORMAL_PATH = "informal_path", "Informal path"
+
+
 # Extra per-key data for /api/meta/. Tests check every enum key has an entry.
 HAZARD_ICONS = {
     HazardType.ROAD_BLOCK: "barrier",
@@ -74,3 +86,22 @@ CONDITION_MEANINGS = {
     Condition.RED: "Fresh, significant hazard",
     Condition.GREY: "Unknown, stale, disputed or needs review",
 }
+
+# Line colors for bike segments (E7) and the bike-parking dot (E10). Also published in
+# /api/meta/ as `segment_kinds` / `bike_parking`, so the frontend never hardcodes them.
+SEGMENT_KIND_HEX = {
+    SegmentKind.BIKE_LANE: "#1565C0",
+    SegmentKind.SHARED_PATH: "#00838F",
+    SegmentKind.ROAD: "#6D4C41",
+    SegmentKind.INFORMAL_PATH: "#8D6E63",
+}
+
+# Line style per kind: "solid" | "dashed" | "dotted".
+SEGMENT_KIND_STYLE = {
+    SegmentKind.BIKE_LANE: "solid",
+    SegmentKind.SHARED_PATH: "dashed",
+    SegmentKind.ROAD: "dotted",
+    SegmentKind.INFORMAL_PATH: "dashed",
+}
+
+BIKE_PARKING_HEX = "#0D47A1"

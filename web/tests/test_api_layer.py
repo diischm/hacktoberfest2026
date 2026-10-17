@@ -17,6 +17,7 @@ MOCK_FILES = [
     "report-create.json",
     "report-feedback.json",
     "segments.json",
+    "bike-parking.json",
     "scenarios.json",
     "routes-compare.json",
     "error-ai-rate-limited.json",
@@ -69,6 +70,20 @@ def test_reports_mock_matches_contract_keys():
 def test_mock_reports_are_marked_synthetic():
     for feature in mock("reports.json")["features"]:
         assert feature["properties"]["is_synthetic"] is True
+
+
+def test_segments_mock_matches_contract_keys():
+    data, example = mock("segments.json"), contract_example("### E7 Segments")
+
+    assert data.keys() == example.keys()
+    assert data["features"][0]["properties"].keys() == example["features"][0]["properties"].keys()
+
+
+def test_bike_parking_mock_matches_contract_keys():
+    data, example = mock("bike-parking.json"), contract_example("### E10 Bike parking")
+
+    assert data.keys() == example.keys()
+    assert data["features"][0]["properties"].keys() == example["features"][0]["properties"].keys()
 
 
 @pytest.mark.parametrize("name", ["web:home", "web:report"])

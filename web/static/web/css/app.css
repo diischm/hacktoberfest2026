@@ -503,6 +503,18 @@ button {
   align-self: center;
 }
 
+/* segment-kind swatch (bike lanes): color and dash come from /api/meta/ segment_kinds */
+.sw-line {
+  --c: var(--c-grey);
+  flex: none;
+  width: 20px;
+  height: 0;
+  border-top-width: 4px;
+  border-top-style: solid;
+  border-top-color: var(--c);
+  align-self: center;
+}
+
 /* ------------------------------------------------------------------ buttons */
 .pill {
   display: inline-flex;
@@ -622,6 +634,8 @@ button {
 }
 .check input:checked + .box svg { stroke-dashoffset: 0; }
 .check input:focus-visible + .box { outline: 3px solid var(--focus); outline-offset: 2px; }
+/* radio variant (map background): round box, same check mark */
+.check--radio .box { border-radius: 50%; }
 
 /* ------------------------------------------------------------------ MAP page */
 /* Fills the space between top bar and bottom nav; nothing on it scrolls the page. */
@@ -721,6 +735,10 @@ button {
 }
 .key li { display: flex; align-items: center; gap: 8px; }
 .key__note { margin-top: 6px; font-size: var(--text-xs); }
+
+/* map tooltips for the bike layers (E7 lanes, E10 parking) */
+.tip { display: flex; flex-direction: column; gap: 1px; }
+.tip span { font-size: var(--text-xs); opacity: 0.85; }
 
 /* status notes: loading / error / empty / truncated (never a blocking overlay) */
 .map-status {
