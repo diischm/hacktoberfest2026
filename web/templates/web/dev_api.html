@@ -5,17 +5,17 @@
 
 {% block head %}
 <style>
-  .dev { max-width: 40rem; margin: 0 auto; display: grid; gap: var(--space-4); }
+  .dev { max-width: 40rem; margin: 0 auto; display: grid; gap: var(--space-md); }
   .dev .card { margin: 0; }
-  .dev h2 { margin: 0 0 var(--space-3); font-family: var(--font-mono); font-size: var(--fs-lg); }
-  .dev-grid { display: grid; grid-template-columns: auto 1fr; gap: var(--space-2) var(--space-3); align-items: center; }
-  .dev label { font-family: var(--font-mono); font-size: var(--fs-sm); }
-  .dev input, .dev select, .dev button { font: inherit; min-height: var(--tap-min); padding: 0 var(--space-2); }
+  .dev h2 { margin: 0 0 var(--space-sm); font-family: var(--font-mono); font-size: var(--text-lg); }
+  .dev-grid { display: grid; grid-template-columns: auto 1fr; gap: var(--space-xs) var(--space-sm); align-items: center; }
+  .dev label { font-family: var(--font-mono); font-size: var(--text-sm); }
+  .dev input, .dev select, .dev button { font: inherit; min-height: var(--tap-min); padding: 0 var(--space-xs); }
   .dev button { cursor: pointer; }
-  .dev-call { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; padding: var(--space-2) 0; border-top: 1px dashed rgb(0 0 0 / 0.2); }
+  .dev-call { display: flex; flex-wrap: wrap; gap: var(--space-xs); align-items: center; padding: var(--space-xs) 0; border-top: 1px dashed rgb(0 0 0 / 0.2); }
   .dev-call button { min-width: 11rem; }
   .dev-call input { flex: 1; min-width: 6rem; }
-  .dev-out { margin: 0; max-height: 60vh; overflow: auto; background: var(--color-ink); color: var(--color-paper); padding: var(--space-3); border-radius: var(--radius-sm); font-size: var(--fs-sm); white-space: pre-wrap; word-break: break-word; }
+  .dev-out { margin: 0; max-height: 60vh; overflow: auto; background: var(--ink); color: var(--paper); padding: var(--space-sm); border-radius: var(--radius-sm); font-size: var(--text-sm); white-space: pre-wrap; word-break: break-word; }
 </style>
 {% endblock %}
 
@@ -27,7 +27,7 @@
     <h2>Modes (this page only)</h2>
     <p class="muted">Changes here last until reload. Permanent defaults: <code>web/static/web/js/config.js</code>.</p>
     <div class="dev-grid" id="modes"></div>
-    <div class="dev-grid" style="margin-top: var(--space-3)">
+    <div class="dev-grid" style="margin-top: var(--space-sm)">
       <label for="force-error">Mock error</label>
       <select id="force-error">
         <option value="">none</option>

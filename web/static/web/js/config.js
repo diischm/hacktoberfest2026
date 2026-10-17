@@ -26,5 +26,18 @@ export const MOCK_FORCE_ERROR = null;
 // Mock files live next to this file: /static/web/js/config.js -> /static/web/mock/.
 export const MOCK_BASE = new URL("../mock/", import.meta.url).pathname;
 
+// Map background tiles. Swap the whole object to change provider.
+// referrerPolicy: Django sends "Referrer-Policy: same-origin", which strips the Referer
+// header from tile requests; OSM's tile policy requires it and answers 403 without it.
+export const TILE_LAYER = {
+  url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+  options: {
+    maxZoom: 19,
+    referrerPolicy: "strict-origin-when-cross-origin",
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  },
+};
+
 export const TIMEOUT_MS = 10_000;
 export const UPLOAD_TIMEOUT_MS = 30_000; // E5 runs the AI inside the request (~15 s)
