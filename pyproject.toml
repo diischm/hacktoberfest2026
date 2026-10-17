@@ -7,7 +7,7 @@ line-length = 100
 "*/migrations/*" = ["RUF012"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["tests", "web/tests"]
 # pytest-django: test settings force AI_MODE=mock so tests never call the real Gemini API
 DJANGO_SETTINGS_MODULE = "config.settings_test"
 
