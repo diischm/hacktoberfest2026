@@ -58,6 +58,22 @@ synthetic.
 
 8. Open <http://localhost:8000> in your browser.
 
+## The map
+
+The map shows two kinds of things:
+
+- **Reported hazards** (green / amber / red pins) — photo reports from cyclists, scored live.
+- **Existing bike network** — the bike lanes and bicycle parking that already exist in Skopje,
+  from OpenStreetMap (© OpenStreetMap contributors, ODbL). Turn them on or off in **Layers**.
+  Choose the standard map background or the **Cycle map** (CyclOSM) there too.
+
+The bike network ships with the repository (`reports/data/skopje_bike.geojson`), so the app and
+its tests never call the network. To refresh it from OpenStreetMap (needs internet):
+
+```bash
+make bike-data
+```
+
 ## AI photo analysis (optional)
 
 The app works without any key: photos get a sample AI answer. To use the real AI:

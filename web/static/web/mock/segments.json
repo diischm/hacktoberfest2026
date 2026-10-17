@@ -1,5 +1,6 @@
 {
   "type": "FeatureCollection",
+  "osm_timestamp": "2026-10-17T14:11:06Z",
   "features": [
     {
       "type": "Feature",
@@ -31,7 +32,7 @@
         "hazard_report_ids": [
           101
         ],
-        "is_synthetic": true
+        "is_synthetic": false
       }
     }
   ]

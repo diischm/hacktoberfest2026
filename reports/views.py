@@ -1,9 +1,12 @@
 """
-Report API: E2 meta, E3 list (GeoJSON), E4 detail, E5 create.
+Report API: E2 meta, E3 list (GeoJSON), E4 detail, E5 create, E7 bike segments, E10 bike parking.
 
 `APIView` is DRF's class-based view: a `get()` method handles GET, `post()` handles POST, other
 methods get a 405. Errors are raised as exceptions and turned into the contract shape by
 config/exceptions.py.
+
+E7 and E10 serve existing OpenStreetMap geometry (reports/bike.py), narrowed by the same `bbox`
+as E3.
 """
 
 import logging
@@ -21,8 +24,15 @@ from rest_framework.views import APIView
 from ai.errors import AiRateLimited, AiUnavailable
 from ai.service import analyze_image
 from config.exceptions import AiRateLimitedError, InvalidBBox
+from reports.bike import build_bike_parking, build_segments
 from reports.choices import HazardType, VerificationStatus
-from reports.limits import MAP_BOUNDS, MAX_REPORTS_PER_LIST
+from reports.limits import (
+    MAP_BOUNDS,
+    MAX_BIKE_PARKING_PER_LIST,
+    MAX_HAZARDS_PER_SEGMENT_LIST,
+    MAX_REPORTS_PER_LIST,
+    MAX_SEGMENTS_PER_LIST,
+)
 from reports.meta import build_meta
 from reports.models import Report
 from reports.permissions import CsrfForUnsafeMethods
@@ -205,3 +215,20 @@ class ReportDetailView(PublicReadView):
         if report is None:
             raise NotFound()
         return Response(ReportSerializer(report).data)
+
+
+class SegmentListView(PublicReadView):
+    """E7: existing bike lanes / paths, as GeoJSON LineStrings, scored against current reports."""
+
+    def get(self, request):
+        bbox = parse_bbox(request.query_params.get("bbox"))
+        body = build_segments(bbox, MAX_HAZARDS_PER_SEGMENT_LIST, MAX_SEGMENTS_PER_LIST)
+        return Response(body)
+
+
+class BikeParkingListView(PublicReadView):
+    """E10: existing bicycle-parking spots, as GeoJSON Points."""
+
+    def get(self, request):
+        bbox = parse_bbox(request.query_params.get("bbox"))
+        return Response(build_bike_parking(bbox, MAX_BIKE_PARKING_PER_LIST))
