@@ -4,5 +4,7 @@ line-length = 100
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# pytest-django: test settings force AI_MODE=mock so tests never call the real Gemini API
+DJANGO_SETTINGS_MODULE = "config.settings_test"
 
 [tool.bandit]
