@@ -8,6 +8,7 @@ import { TILE_LAYER } from "./config.js";
 const L = window.L; // Leaflet, loaded by a classic <script> before this module runs
 
 const RELOAD_DEBOUNCE_MS = 300;
+const FOCUS_ZOOM = 17; // zoom used when a link opens one report (/?report=<id>)
 const MIN_PIN_OPACITY = 0.55;
 
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -481,7 +482,8 @@ function markerElement(id) {
   return found;
 }
 
-async function openDetail(id) {
+// pan: true moves the map to the report once E4 answers (it may be outside the current view).
+async function openDetail(id, { pan = false } = {}) {
   const wasOpen = !el.detail.hidden;
   setActivePin(id);
   toggleLayers(false);
@@ -503,6 +505,8 @@ async function openDetail(id) {
     const report = await getReport(id);
     if (seq !== state.detailSeq) return;
     renderDetail(report);
+    // E4 is flat [lat, lng]. Moving the map reloads the pins, so this one appears too.
+    if (pan) map.setView([report.lat, report.lng], Math.max(map.getZoom(), FOCUS_ZOOM));
   } catch (err) {
     if (seq !== state.detailSeq) return;
     if (err instanceof ApiError && err.code === "not_found") {
@@ -572,6 +576,12 @@ document.addEventListener("keydown", (e) => {
 
 // --- Start ------------------------------------------------------------------------------
 
+// /?report=<id>: the upload page's "See it on the map" link opens that report's sheet.
+function reportIdFromUrl() {
+  const id = new URLSearchParams(location.search).get("report");
+  return id && /^\d+$/.test(id) ? Number(id) : null;
+}
+
 async function init() {
   setLoading(true);
   let meta;
@@ -586,6 +596,8 @@ async function init() {
   createMap();
   buildLayers();
   loadReports();
+  const linkedId = reportIdFromUrl();
+  if (linkedId !== null) openDetail(linkedId, { pan: true });
 }
 
 init();

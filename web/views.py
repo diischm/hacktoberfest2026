@@ -3,6 +3,8 @@ from django.http import Http404
 from django.shortcuts import render
 from django.views.decorators.csrf import ensure_csrf_cookie
 
+from reports.limits import MAX_NOTE_LENGTH
+
 
 # ensure_csrf_cookie: pages that POST from JS need the csrftoken cookie that api.js reads.
 # home: feedback buttons on the map (E6). report: photo upload (E5).
@@ -13,7 +15,9 @@ def home(request):
 
 @ensure_csrf_cookie
 def report(request):
-    return render(request, "web/report.html")
+    # maxlength in the HTML works before /api/meta/ has loaded; report.js then applies meta's
+    # value. Both come from reports/limits.py, the same number the API enforces.
+    return render(request, "web/report.html", {"max_note_length": MAX_NOTE_LENGTH})
 
 
 def routes(request):
