@@ -33,11 +33,12 @@ After each merge, send the message from [WORKFLOW.md](WORKFLOW.md#communication)
 
 ### 1. `feat/report-models`
 
-- **Goal:** `Report` and `Feedback` models in `reports`, admin registration, migrations.
+- **Goal:** `Report` and `ReportFeedback` models in `reports`, admin registration, migrations.
 - **Details:** fields exactly as [Report object](API_CONTRACT.md#report-object); enums as
   `TextChoices` in one module (single source for E2). `photo` = `ImageField` → adds **Pillow**
-  (image library Django needs to validate image files). `Feedback` stores report, action,
+  (image library Django needs to validate image files). `ReportFeedback` stores report, action,
   session key, timestamp (for `duplicate_feedback`). No PostGIS/GeoDjango: plain float lat/lng.
+  Synthetic fixture `reports/fixtures/demo_reports.json` (`make loaddemo`, no photos).
 - **Live:** none.
 - **Done when:** `make check` green; admin can create/edit a report; model tests for defaults.
 - **Frontend can switch from mock to live for:** none.
@@ -48,9 +49,10 @@ After each merge, send the message from [WORKFLOW.md](WORKFLOW.md#communication)
 - **Live:** [E2 meta](API_CONTRACT.md#e2-meta), [E3 list](API_CONTRACT.md#e3-list-reports),
   [E4 detail](API_CONTRACT.md#e4-report-detail).
 - **Details:** DRF custom exception handler producing `{"error": {code, message, fields}}` for
-  all errors (incl. 404/405/CSRF). `bbox` parsing + validation. Small fixture
-  `reports/fixtures/dev_reports.json` (3 reports, `is_synthetic: true`, `photo_url: null`)
-  so the map has data before branch 7. `condition` = simple placeholder until branch 5.
+  all errors (incl. 404/405/CSRF). `bbox` parsing + validation. No new fixture: there is
+  **one** fixture, `reports/fixtures/demo_reports.json` from branch 1, reused by later branches
+  so the map has data before branch 7. `condition` = simple placeholder in
+  `reports/condition.py` until branch 5.
 - **Done when:** tests compare each response's **keys and types** against the contract
   examples; bad bbox → 400 `invalid_bbox`; unknown id → 404 `not_found` in contract format.
 - **Frontend can switch from mock to live for:** E2, E3, E4.

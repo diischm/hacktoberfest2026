@@ -10,6 +10,7 @@ urlpatterns = [
     # Never matched (web.urls wins); kept only so tests/test_home.py reverse("home") works.
     path("", views.home, name="home"),
     path("api/health/", views.health, name="health"),
+    path("api/", include("reports.urls")),
     path("admin/", admin.site.urls),
 ]
 
